@@ -1,0 +1,24 @@
+{
+    "name": "whitecube/winbooks-on-web-php-client",
+    "description": "A PHP Wrapper for the Winbooks On Web REST API.",
+    "require": {
+        "guzzlehttp/guzzle": "^7.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.0",
+        "pestphp/pest": "^0.2.3"
+    },
+    "authors": [
+        {
+            "name": "Adrien Leloup",
+            "email": "adrien@whitecube.be"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Winbooks\\": "src/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
