@@ -28,7 +28,7 @@ if(!$winbooks->authenticated()) {
 ```
 
 ### Specifying the folder
-You can set the folder once and it will be used for all subsequent requests
+You can set the folder once and it will be used for all subsequent requests.
 
 ```php
 $winbooks->folder('TEST_FOLDER');
@@ -37,21 +37,25 @@ $winbooks->get(/*...*/)
 ```
 
 ### Getting data
+All getter methods will return the JSON data directly from WoW, already decoded.
 
 To get all results from an object model, use the `all($object_model)` method.
 
 ```php
-$winbooks->all('Customers');
+$customers = $winbooks->all('Customers');
 ```
 
 To get a single result from an object model, use the `get($object_model, $code)` method.
 > Note: you can substitute $code for the ID if you have it.
 
 ```php
-$winbooks->get('Customer', 'VLADIMIR');
+$vlad = $winbooks->get('Customer', 'VLADIMIR');
 // With ID
-$winbooks->get('Customer', '4713a22f-ebc0-ea11-80c7-0050s68cc4a2');
+$vlad = $winbooks->get('Customer', '4713a22f-ebc0-ea11-80c7-0050s68cc4a2');
 ```
+
+### Posting data
+TODO.
 
 
 ## Tests
