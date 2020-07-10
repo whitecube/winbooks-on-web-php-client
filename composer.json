@@ -2,7 +2,10 @@
     "name": "whitecube/winbooks-on-web-php-client",
     "description": "A PHP Wrapper for the Winbooks On Web REST API.",
     "require": {
-        "guzzlehttp/guzzle": "^7.0"
+        "php": "^7.1",
+        "guzzlehttp/guzzle": "^7.0",
+        "vlucas/phpdotenv": "^5.0",
+        "ext-json": "*"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.0",
