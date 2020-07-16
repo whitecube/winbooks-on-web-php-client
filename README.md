@@ -84,7 +84,7 @@ $winbooks->addMany('Customers', [
 You can also use the provided Model classes instead. These classes are named like the object models documented in the [Winbooks On Web documentation](https://help.winbooks.be/pages/viewpage.action?pageId=54529841).
 
 ```php
-$vlad = new Customer(['Code' => 'VLADIMIOR']);
+$vlad = new Customer(['Code' => 'VLADIMIR']);
 $alice = new Customer(['Code' => 'ALICE']);
 
 $winbooks->addModel($vlad);
