@@ -3,10 +3,12 @@
 namespace Winbooks;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Exception\ClientException;
 use Winbooks\Exceptions\InvalidTokensException;
 use Winbooks\Exceptions\UnauthenticatedException;
 use Winbooks\Exceptions\UndefinedFolderException;
+use Winbooks\Exceptions\InvalidRefreshTokenException;
 
 class Winbooks
 {
@@ -136,12 +138,16 @@ class Winbooks
      */
     protected function refreshAuth()
     {
-        $auth = $this->getAuth($this->email, 'refresh_token', $this->refresh_token);
+        try {
+            $auth = $this->getAuth($this->email, 'refresh_token', $this->refresh_token);
 
-        $this->access_token = $auth->access_token;
-        $this->refresh_token = $auth->refresh_token;
+            $this->access_token = $auth->access_token;
+            $this->refresh_token = $auth->refresh_token;
 
-        $this->initialize();
+            $this->initialize();
+        } catch(ClientException $exception) {
+            throw new InvalidRefreshTokenException('Please provide a valid Refresh Token.');
+        }
     }
 
     /**
@@ -194,66 +200,21 @@ class Winbooks
     }
 
     /**
-     * Get all objects from an object model namespace
-     *
-     * @param string $oms
-     * @return mixed
-     * @throws InvalidTokensException
-     * @throws UnauthenticatedException
-     * @throws UndefinedFolderException
-     */
-    public function all(string $oms)
-    {
-        $this->ensureInitialized();
-
-        $response = $this->attempt(function() use ($oms) {
-            return $this->guzzle->get("app/$oms/Folder/$this->folder");
-        });
-
-        if($response->getStatusCode() == 200) {
-            return json_decode($response->getBody());
-        }
-    }
-
-    /**
-     * Get an object from an object model namespace
-     *
-     * @param string $om
-     * @param string $code
-     * @return mixed
-     * @throws InvalidTokensException
-     * @throws UnauthenticatedException
-     * @throws UndefinedFolderException
-     */
-    public function get(string $om, string $code)
-    {
-        $this->ensureInitialized();
-
-        $response = $this->attempt(function() use ($om, $code) {
-            return $this->guzzle->get("app/$om/$code/Folder/$this->folder");
-        });
-
-        if($response->getStatusCode() == 200) {
-            return json_decode($response->getBody());
-        }
-    }
-
-    /**
      * Attempt to use the API, and try to refresh the access token if it is invalid
      *
      * @param callable $callback
-     * @param bool $usingRefreshToken
+     * @param bool $secondAttempt
      * @return mixed
      * @throws InvalidTokensException
      * @throws UnauthenticatedException
      */
-    protected function attempt(callable $callback, $usingRefreshToken = false)
+    protected function attempt(callable $callback, $secondAttempt = false)
     {
         try {
             $response = $callback();
         }
         catch (ClientException $exception) {
-            if($usingRefreshToken) {
+            if($secondAttempt) {
                 throw new InvalidTokensException('Access Token and Refresh Token are invalid');
             }
 
@@ -289,4 +250,219 @@ class Winbooks
     {
         $this->access_token = $access_token;
     }
+
+    /**
+     * Set the refresh token. Mainly for testing purposes.
+     *
+     * @param string $refresh_token
+     */
+    public function setRefreshToken($refresh_token)
+    {
+        $this->refresh_token = $refresh_token;
+    }
+
+    /**
+     * Decode the response if it worked
+     *
+     * @param Response $response
+     * @return \stdClass|void
+     */
+    protected function decode(Response $response)
+    {
+        if($response->getStatusCode() == 200) {
+            return json_decode($response->getBody());
+        }
+    }
+
+    /**
+     * Make a manual request to the API
+     *
+     * @param callable $attempt
+     * @return \stdClass|void
+     * @throws InvalidTokensException
+     * @throws UnauthenticatedException
+     * @throws UndefinedFolderException
+     */
+    public function request(callable $attempt)
+    {
+        $this->ensureInitialized();
+
+        $response = $this->attempt($attempt);
+
+        return $this->decode($response);
+    }
+
+    /**
+     * Get all objects from an object model namespace
+     *
+     * @param string $oms
+     * @return mixed
+     * @throws InvalidTokensException
+     * @throws UnauthenticatedException
+     * @throws UndefinedFolderException
+     */
+    public function all(string $oms)
+    {
+        return $this->request(function() use ($oms) {
+            return $this->guzzle->get("app/$oms/Folder/$this->folder");
+        });
+    }
+
+    /**
+     * Get an object from an object model namespace
+     *
+     * @param string $om
+     * @param string $code
+     * @return mixed
+     * @throws InvalidTokensException
+     * @throws UnauthenticatedException
+     * @throws UndefinedFolderException
+     */
+    public function get(string $om, string $code, $maxLevel = 1)
+    {
+        return $this->request(function() use ($om, $code, $maxLevel) {
+            return $this->guzzle->get("app/$om/$code/Folder/$this->folder?maxLevel=$maxLevel");
+        });
+    }
+
+    /**
+     * Add an object
+     *
+     * @param string $om
+     * @param string $code
+     * @param array $data
+     * @return \stdClass
+     * @throws InvalidTokensException
+     * @throws UnauthenticatedException
+     * @throws UndefinedFolderException
+     */
+    public function add(string $om, string $code, array $data)
+    {
+        if(!isset($data['Code'])) {
+            $data['Code'] = $code;
+        }
+
+        return $this->request(function() use ($om, $code, $data) {
+            return $this->guzzle->post("app/$om/$code/Folder/$this->folder", [
+                'json' => $data
+            ]);
+        });
+    }
+
+    /**
+     * Add many objects at once
+     *
+     * @param string $oms
+     * @param array $objects
+     * @return \stdClass|void
+     * @throws InvalidTokensException
+     * @throws UnauthenticatedException
+     * @throws UndefinedFolderException
+     */
+    public function addMany(string $oms, array $objects)
+    {
+        return $this->request(function() use ($oms, $objects) {
+            return $this->guzzle->post("app/$oms/Folder/$this->folder", [
+                'json' => $objects
+            ]);
+        });
+    }
+
+    /**
+     * Update an object
+     *
+     * @param string $om
+     * @param string $code
+     * @param array $data
+     * @return mixed
+     * @throws InvalidTokensException
+     * @throws UnauthenticatedException
+     * @throws UndefinedFolderException
+     */
+    public function update(string $om, string $code, array $data)
+    {
+        return $this->request(function() use ($om, $code, $data) {
+            return $this->guzzle->put("app/$om/$code/Folder/$this->folder", [
+                'json' => $data
+            ]);
+        });
+    }
+
+    /**
+     * Update multiple objects at once
+     *
+     * @param string $oms
+     * @param array $objects
+     * @return \stdClass|void
+     * @throws InvalidTokensException
+     * @throws UnauthenticatedException
+     * @throws UndefinedFolderException
+     */
+    public function updateMany(string $oms, array $objects)
+    {
+        return $this->request(function() use ($oms, $objects) {
+            return $this->guzzle->put("app/$oms/Folder/$this->folder", [
+                'json' => $objects
+            ]);
+        });
+    }
+
+    /**
+     * Delete an object
+     *
+     * @param string $om
+     * @param string $code
+     * @return \stdClass|void
+     * @throws InvalidTokensException
+     * @throws UnauthenticatedException
+     * @throws UndefinedFolderException
+     */
+    public function delete(string $om, string $code)
+    {
+        return $this->request(function() use ($om, $code) {
+            return $this->guzzle->delete("app/$om/$code/Folder/$this->folder");
+        });
+    }
+
+    /**
+     * Add a model instance
+     *
+     * @param ObjectModel $model
+     * @return \stdClass|void
+     * @throws InvalidTokensException
+     * @throws UnauthenticatedException
+     * @throws UndefinedFolderException
+     */
+    public function addModel(ObjectModel $model)
+    {
+        return $this->request(function() use ($model) {
+            $om = $model->getOM();
+            $code = $model->getCode();
+
+            return $this->guzzle->post("app/$om/$code/Folder/$this->folder", [
+                'json' => $model
+            ]);
+        });
+    }
+
+    /**
+     * Add multiple model instances at once
+     *
+     * @param array $models
+     * @return \stdClass|void
+     * @throws InvalidTokensException
+     * @throws UnauthenticatedException
+     * @throws UndefinedFolderException
+     */
+    public function addModels(array $models)
+    {
+        return $this->request(function() use ($models) {
+            $oms = $models[0]->getOMS();
+
+            return $this->guzzle->post("app/$oms/Folder/$this->folder", [
+                'json' => $models
+            ]);
+        });
+    }
+
 }
