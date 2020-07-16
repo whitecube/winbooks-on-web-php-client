@@ -56,6 +56,11 @@ $vlad = $winbooks->get('Customer', 'VLADIMIR');
 $vlad = $winbooks->get('Customer', '4713a22f-ebc0-ea11-80c7-0050s68cc4a2');
 ```
 
+To specify the amount of nested data you want ([`maxLevel` parameter](https://help.winbooks.be/display/DEV/1.+Query+Data)), you can pass it as a third param to the get method
+```php
+$vlad = $winbooks->get('Customer', 'VLADIMIR', 3);
+```
+
 ### Inserting data
 A generic way to insert data is by using the `add($object_model, $code, $data)` method:
 
