@@ -1,5 +1,7 @@
 # Winbooks On Web PHP Client
 
+![Tests](https://github.com/whitecube/winbooks-on-web-php-client/workflows/Tests/badge.svg)
+
 ## Installation
 
 ```
