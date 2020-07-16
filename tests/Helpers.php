@@ -2,8 +2,13 @@
 
 namespace Tests;
 
-$dotenv = \Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
-$dotenv->load();
+$_ENV['WOW_TEST_EMAIL'] = getenv('WOW_TEST_EMAIL');
+$_ENV['WOW_TEST_EXCHANGE_TOKEN'] = getenv('WOW_TEST_EXCHANGE_TOKEN');
+
+if(!$_ENV['WOW_TEST_EMAIL']) {
+    $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
+    $dotenv->load();
+}
 
 function authenticate() {
     $email = $_ENV['WOW_TEST_EMAIL'];
