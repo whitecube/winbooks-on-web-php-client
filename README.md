@@ -126,7 +126,7 @@ To run the tests:
 ./vendor/bin/pest
 ```
 
-with code coverage (needs xdebug)
+with code coverage (needs pcov or xdebug)
 ```
 ./vendor/bin/pest --coverage
 ```
