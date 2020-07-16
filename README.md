@@ -54,9 +54,62 @@ $vlad = $winbooks->get('Customer', 'VLADIMIR');
 $vlad = $winbooks->get('Customer', '4713a22f-ebc0-ea11-80c7-0050s68cc4a2');
 ```
 
-### Posting data
-TODO.
+### Inserting data
+A generic way to insert data is by using the `add($object_model, $code, $data)` method:
 
+```php
+$winbooks->add('Customer', 'VLADIMIR', [
+    'Memo' => 'A Memo for Vladimir',
+    // ...
+]);
+
+// You can also add multiple objects at once:
+
+$winbooks->addMany('Customers', [
+    [
+        'Code' => 'VLADIMIR',
+        'Memo' => 'A Memo for Vladimir',
+        // ...
+    ],
+    [
+        'Code' => 'ALICE',
+        'Memo' => 'A Memo for Alice',
+        // ...
+    ]
+]);
+```
+
+You can also use the provided Model classes instead. These classes are named like the object models documented in the [Winbooks On Web documentation](https://help.winbooks.be/pages/viewpage.action?pageId=54529841).
+
+```php
+$alice = new Customer(['Code' => 'ALICE']);
+$winbooks->addModel($alice);
+```
+
+### Updating data
+```php
+$winbooks->update('Customer', 'ALICE', [
+    'Memo' => 'This is an updated memo for Alice',
+]);
+
+// Or multiple
+
+$winbooks->updateMany('Customers', [
+    [
+        'Code' => 'VLADIMIR',
+        'Memo' => 'This is an updated memo for Vladimir',
+    ],
+    [
+        'Code' => 'ALICE',
+        'Memo' => 'This is an updated memo for Alice',
+    ]
+]);
+```
+
+### Deleting data
+```php
+$winbooks->delete('Customer', 'VLADIMIR');
+```
 
 ## Tests
 
