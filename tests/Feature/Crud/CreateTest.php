@@ -1,10 +1,10 @@
 <?php
 
-use Winbooks\Winbooks;
+use Whitecube\Winbooks\Winbooks;
 use function Tests\test_folder;
 use function Tests\cleanup;
-use Winbooks\Models\Third;
-use Winbooks\Models\Customer;
+use Whitecube\Winbooks\Models\Third;
+use Whitecube\Winbooks\Models\Customer;
 
 beforeEach(function() {
     $this->winbooks = new Winbooks();

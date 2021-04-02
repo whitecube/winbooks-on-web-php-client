@@ -126,6 +126,8 @@ $winbooks->delete('Customer', 'VLADIMIR');
 
 This project uses [PEST](https://pestphp.com/) for tests.
 
+First, create a `.env` file from the `.env.example` and fill it with your API testing credentials.
+
 To run the tests:
 ```
 ./vendor/bin/pest
@@ -135,7 +137,6 @@ with code coverage (needs pcov or xdebug)
 ```
 ./vendor/bin/pest --coverage
 ```
-
 
 ## 💖 Sponsorships
 

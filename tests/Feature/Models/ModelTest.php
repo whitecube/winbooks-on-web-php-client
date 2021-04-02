@@ -1,7 +1,7 @@
 <?php
 
-use Winbooks\Winbooks;
-use Winbooks\Models\Customer;
+use Whitecube\Winbooks\Winbooks;
+use Whitecube\Winbooks\Models\Customer;
 use function Tests\authenticate;
 
 

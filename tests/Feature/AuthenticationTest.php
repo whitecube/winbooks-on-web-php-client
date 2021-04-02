@@ -1,6 +1,6 @@
 <?php
 
-use Winbooks\Winbooks;
+use Whitecube\Winbooks\Winbooks;
 use function Tests\authenticate;
 
 beforeEach(function() {
@@ -9,7 +9,7 @@ beforeEach(function() {
 
 it('throws an exception if used without authenticating first', function() {
     $this->winbooks->folder('PARFIWEB_DEMO')->all('Customers');
-})->throws(\Winbooks\Exceptions\UnauthenticatedException::class);
+})->throws(\Whitecube\Winbooks\Exceptions\UnauthenticatedException::class);
 
 
 it('can authenticate with an e-mail address and an exchange token', function() {
@@ -45,7 +45,7 @@ it('throws exception if all tokens are invalid', function() {
     $this->winbooks->initialize();
 
     $this->winbooks->folder('PARFIWEB_DEMO')->get('Customer', 'ARTHUR');
-})->throws(\Winbooks\Exceptions\InvalidRefreshTokenException::class);
+})->throws(\Whitecube\Winbooks\Exceptions\InvalidRefreshTokenException::class);
 
 
 it('still_throws_underlying_API_exceptions', function() {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Winbooks;
+namespace Whitecube\Winbooks;
 
 use ReflectionClass;
 use JsonSerializable;

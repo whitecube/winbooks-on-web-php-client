@@ -1,6 +1,6 @@
 <?php
 
-use Winbooks\Winbooks;
+use Whitecube\Winbooks\Winbooks;
 use function Tests\authenticate;
 
 beforeEach(function() {
@@ -16,4 +16,4 @@ it('can create a winbooks instance', function() {
 it('throws an exception if used without setting a folder', function() {
     authenticate();
     $this->winbooks->all('Customers');
-})->throws(\Winbooks\Exceptions\UndefinedFolderException::class);
+})->throws(\Whitecube\Winbooks\Exceptions\UndefinedFolderException::class);

@@ -1,14 +1,14 @@
 <?php
 
-namespace Winbooks;
+namespace Whitecube\Winbooks;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Exception\ClientException;
-use Winbooks\Exceptions\InvalidTokensException;
-use Winbooks\Exceptions\UnauthenticatedException;
-use Winbooks\Exceptions\UndefinedFolderException;
-use Winbooks\Exceptions\InvalidRefreshTokenException;
+use Whitecube\Winbooks\Exceptions\InvalidTokensException;
+use Whitecube\Winbooks\Exceptions\UnauthenticatedException;
+use Whitecube\Winbooks\Exceptions\UndefinedFolderException;
+use Whitecube\Winbooks\Exceptions\InvalidRefreshTokenException;
 
 class Winbooks
 {
@@ -46,6 +46,7 @@ class Winbooks
      * @var string
      */
     protected $api_host = 'https://prd.winbooksapis.be/wow/v2/';
+    // protected $api_host = 'https://rapi.winbooksonweb.be/';
 
     /**
      * The folder name

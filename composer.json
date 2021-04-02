@@ -15,11 +15,15 @@
         {
             "name": "Adrien Leloup",
             "email": "adrien@whitecube.be"
+        },
+        {
+            "name": "Toon Van den Bos",
+            "email": "toon@whitecube.be"
         }
     ],
     "autoload": {
         "psr-4": {
-            "Winbooks\\": "src/"
+            "Whitecube\\Winbooks\\": "src/"
         }
     },
     "minimum-stability": "dev",

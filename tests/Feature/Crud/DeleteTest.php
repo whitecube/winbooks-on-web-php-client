@@ -1,6 +1,6 @@
 <?php
 
-use Winbooks\Winbooks;
+use Whitecube\Winbooks\Winbooks;
 use function Tests\test_folder;
 
 beforeEach(function() {

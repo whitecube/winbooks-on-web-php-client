@@ -1,6 +1,6 @@
 <?php
 
-namespace Winbooks\Exceptions;
+namespace Whitecube\Winbooks\Exceptions;
 
 class InvalidRefreshTokenException extends \Exception
 {

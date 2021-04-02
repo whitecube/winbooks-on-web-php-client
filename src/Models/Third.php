@@ -1,8 +1,8 @@
 <?php
 
-namespace Winbooks\Models;
+namespace Whitecube\Winbooks\Models;
 
-use Winbooks\ObjectModel;
+use Whitecube\Winbooks\ObjectModel;
 
 class Third extends ObjectModel
 {

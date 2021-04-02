@@ -1,8 +1,8 @@
 <?php
 
-namespace Winbooks\Models\Logistics;
+namespace Whitecube\Winbooks\Models\Logistics;
 
-use Winbooks\ObjectModel;
+use Whitecube\Winbooks\ObjectModel;
 
 class DocumentHeader extends ObjectModel
 {
