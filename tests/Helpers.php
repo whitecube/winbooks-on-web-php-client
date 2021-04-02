@@ -2,17 +2,22 @@
 
 namespace Tests;
 
-$_ENV['WOW_TEST_EMAIL'] = getenv('WOW_TEST_EMAIL');
-$_ENV['WOW_TEST_EXCHANGE_TOKEN'] = getenv('WOW_TEST_EXCHANGE_TOKEN');
 
-if(!$_ENV['WOW_TEST_EMAIL']) {
-    $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
-    $dotenv->load();
+function credentials() {
+    if(! isset($_ENV['WOW_TEST_EMAIL']) || ! isset($_ENV['WOW_TEST_EXCHANGE_TOKEN'])) {
+        $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
+        $dotenv->load();
+    }
+
+    return [
+        $_ENV['WOW_TEST_EMAIL'],
+        $_ENV['WOW_TEST_EXCHANGE_TOKEN']
+    ];
 }
 
 function authenticate() {
-    $email = $_ENV['WOW_TEST_EMAIL'];
-    $token = $_ENV['WOW_TEST_EXCHANGE_TOKEN'];
+    [$email, $token] = credentials();
+
     test()->winbooks->authenticate($email, $token);
 }
 

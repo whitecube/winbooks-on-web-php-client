@@ -9,9 +9,8 @@ beforeEach(function() {
 
 
 it('can create a winbooks instance', function() {
-    assertInstanceOf(Winbooks::class, $this->winbooks);
+    expect($this->winbooks)->toBeInstanceOf(Winbooks::class);
 });
-
 
 it('throws an exception if used without setting a folder', function() {
     authenticate();

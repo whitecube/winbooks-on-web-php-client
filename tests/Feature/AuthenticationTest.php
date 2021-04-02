@@ -14,13 +14,13 @@ it('throws an exception if used without authenticating first', function() {
 
 it('can authenticate with an e-mail address and an exchange token', function() {
     authenticate();
-    assertTrue($this->winbooks->authenticated());
+    expect($this->winbooks->authenticated())->toBeTrue();
 });
 
 
 it('can authenticate by passing the access and refresh tokens to the constructor', function() {
     $winbooks = new Winbooks('foo-access-token', 'bar-refresh-token');
-    assertTrue($winbooks->authenticated());
+    expect($winbooks->authenticated())->toBeTrue();
 });
 
 
@@ -33,7 +33,8 @@ it('uses the refresh token to get a new access token', function() {
 
     // it should still work, since it will just get a new access token with the refresh token
     $customer = $this->winbooks->folder('PARFIWEB_DEMO')->get('Customer', 'ARTHUR');
-    assertEquals('ARTHUR', $customer->Code);
+    
+    expect($customer->Code)->toBe('ARTHUR');
 });
 
 

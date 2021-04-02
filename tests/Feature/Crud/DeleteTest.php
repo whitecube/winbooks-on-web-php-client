@@ -17,8 +17,11 @@ it('can delete a customer', function() {
             'Code' => $code
         ]
     ]);
-    assertNotNull($this->winbooks->get('Customer', $code));
+
+    expect($this->winbooks->get('Customer', $code))->not->toBeNull();
+
     // delete it and check that it's gone
     $this->winbooks->delete('Customer', $code);
-    assertNull($this->winbooks->get('Customer', $code));
+
+    expect($this->winbooks->get('Customer', $code))->toBeNull();
 });

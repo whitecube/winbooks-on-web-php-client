@@ -12,17 +12,18 @@ beforeEach(function() {
 it('can get all customers from a specific folder', function() {
     authenticate();
     $data = $this->winbooks->folder('PARFIWEB_DEMO')->all('Customers');
-    assertIsArray($data);
-    assertObjectHasAttribute('Code', $data[0]);
+
+    expect($data[0] ?? null)->not->toBeNull();
+    expect($data[0])->toHaveProperty('Code');
 });
 
 
 it('can get a customer by code', function() {
     test_folder();
     $customer = $this->winbooks->get('Customer', 'ARTHUR');
-    assertIsObject($customer);
-    assertObjectHasAttribute('Code', $customer);
-    assertEquals('ARTHUR', $customer->Code);
+
+    expect($customer)->toBeObject();
+    expect($customer)->toHaveProperty('Code', 'ARTHUR');
 });
 
 
@@ -33,7 +34,7 @@ it('can get varying amounts of nested data', function() {
     $second = $this->winbooks->get('Customer', 'ARTHUR', 2);
     $third = $this->winbooks->get('Customer', 'ARTHUR', 3);
 
-    assertObjectNotHasAttribute('Third', $first);
-    assertObjectHasAttribute('Third', $second);
-    assertObjectHasAttribute('Civility', $third->Third);
+    expect($first)->not->toHaveProperty('Third');
+    expect($second)->toHaveProperty('Third');
+    expect($third->Third)->toHaveProperty('Civility');
 });

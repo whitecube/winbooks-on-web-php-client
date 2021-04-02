@@ -29,7 +29,8 @@ it('can update an existing customer', function() {
     ]);
 
     $alice = $this->winbooks->get('Customer', 'ALICE');
-    assertSame('This is an updated memo for Alice Wilder', $alice->Memo);
+
+    expect($alice->Memo)->toBe('This is an updated memo for Alice Wilder');
 
     cleanup('Customer', 'ALICE');
 });
@@ -65,8 +66,8 @@ it('can update a list of customers', function() {
 
     $this->winbooks->updateMany('Customers', [$alice, $john]);
 
-    assertSame('Alice Wilder Updated', $this->winbooks->get('Customer', 'ALICE', 3)->Third->Name);
-    assertSame('John Doe Updated', $this->winbooks->get('Customer', 'JOHNDOE', 3)->Third->Name);
+    expect($this->winbooks->get('Customer', 'ALICE', 3)->Third->Name)->toBe('Alice Wilder Updated');
+    expect($this->winbooks->get('Customer', 'JOHNDOE', 3)->Third->Name)->toBe('John Doe Updated');
 
     cleanup('Customer', 'ALICE', 'JOHNDOE');
 });

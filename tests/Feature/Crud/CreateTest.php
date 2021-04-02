@@ -24,7 +24,8 @@ it('can add a customer', function() {
     ];
 
     $result = $this->winbooks->add('Customer', 'ALICE', $customer);
-    assertStringContainsString('Customer/ALICE/Folder/PARFIWEB_DEMO', $result->Href);
+
+    $this->assertStringContainsString('Customer/ALICE/Folder/PARFIWEB_DEMO', $result->Href);
 
     cleanup('Customer', 'ALICE');
 });
@@ -67,7 +68,8 @@ it('can add a list of customers at once', function() {
 
     $this->winbooks->addMany('Customers', $customers);
     $firstCustomer = $this->winbooks->get('Customer', $first);
-    assertSame((string) $first, $firstCustomer->Code);
+
+    expect($firstCustomer->Code)->toBe((string) $first);
 
     cleanup('Customer', $first, $second, $third);
 });
@@ -86,7 +88,8 @@ it('can add a customer from a customer model instance', function() {
     ]);
 
     $result = $this->winbooks->addModel($customer);
-    assertStringContainsString('Customer/ALICE/Folder/PARFIWEB_DEMO', $result->Href);
+
+    $this->assertStringContainsString('Customer/ALICE/Folder/PARFIWEB_DEMO', $result->Href);
 
     cleanup('Customer', 'ALICE');
 });
@@ -116,10 +119,12 @@ it('can add a list of customer models', function() {
     $this->winbooks->addModels($customers);
 
     $alice = $this->winbooks->get('Customer', 'ALICE');
-    assertSame('ALICE', $alice->Code);
+
+    expect($alice->Code)->toBe('ALICE');
 
     $alice2 = $this->winbooks->get('Customer', 'ALICE2');
-    assertSame('ALICE2', $alice2->Code);
+    
+    expect($alice2->Code)->toBe('ALICE2');
 
     cleanup('Customer', 'ALICE', 'ALICE2');
 });
