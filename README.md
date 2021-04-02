@@ -18,6 +18,8 @@ When you have those ready to go, you can use them to ask the API to grant you an
 When you create an instance of the Winbooks client, you can give it the Access Token and the Refresh Token right away if you have them. If you don't, you can simply call `authenticate($email, $exchange_token)` afterwards, which will grant you those tokens which you should then save and reuse the next time you make an instance of the client.
 
 ```php
+use Whitecube\Winbooks\Winbooks;
+
 // $access_token and $refresh_token can be null if you do not have them yet
 $winbooks = new Winbooks($access_token, $refresh_token);
 
@@ -89,6 +91,8 @@ $winbooks->addMany('Customers', [
 You can also use the provided Model classes instead. These classes are named like the object models documented in the [Winbooks On Web documentation](https://help.winbooks.be/pages/viewpage.action?pageId=54529841).
 
 ```php
+use Whitecube\Winbooks\Models\Customer;
+
 $vlad = new Customer(['Code' => 'VLADIMIR']);
 $alice = new Customer(['Code' => 'ALICE']);
 
