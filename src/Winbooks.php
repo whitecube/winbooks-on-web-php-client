@@ -5,10 +5,12 @@ namespace Whitecube\Winbooks;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Exception\ClientException;
+use Whitecube\Winbooks\ObjectModel;
 use Whitecube\Winbooks\Exceptions\InvalidTokensException;
 use Whitecube\Winbooks\Exceptions\UnauthenticatedException;
 use Whitecube\Winbooks\Exceptions\UndefinedFolderException;
 use Whitecube\Winbooks\Exceptions\InvalidRefreshTokenException;
+use Whitecube\Winbooks\Exceptions\UndefinedObjectModelException;
 
 class Winbooks
 {
@@ -49,6 +51,13 @@ class Winbooks
     // protected $api_host = 'https://rapi.winbooksonweb.be/';
 
     /**
+     * The available models with their associated type
+     *
+     * @var array
+     */
+    static protected $models;
+
+    /**
      * The folder name
      *
      * @var string
@@ -59,6 +68,98 @@ class Winbooks
     {
         $this->access_token = $access_token;
         $this->refresh_token = $refresh_token;
+    }
+
+    /**
+     * Check if given string is a valid model type
+     *
+     * @param mixed $type
+     * @return bool
+     */
+    public static function isModelType($type): bool
+    {
+        if(! is_string($type)) {
+            return false;
+        }
+
+        return array_key_exists($type, static::getModelTypes());
+    }
+
+    /**
+     * Create a model instance for given object model type
+     *
+     * @param string $type
+     * @param array $attributes
+     * @return \Whitecube\Winbooks\ObjectModel
+     * @throws UndefinedObjectModelException
+     */
+    public static function makeModelForType(string $type, array $attributes = []): ObjectModel
+    {
+        $classname = static::getModelTypes()[$type] ?? null;
+
+        if(! $classname) {
+            throw new UndefinedObjectModelException('Undefined object model type "' . $type . '".');
+        }
+
+        return new $classname($attributes);
+    }
+
+    /**
+     * Return all defined models & types
+     *
+     * @return array
+     */
+    public static function getModelTypes(): array
+    {
+        if(is_null(static::$models)) {
+            static::$models = static::extractModelTypes(
+                __DIR__ . '/Models',
+                'Whitecube\\Winbooks\\Models'
+            );
+        }
+
+        return static::$models;
+    }
+
+    /**
+     * Recursively retrieve all defined models & types
+     * in given directory.
+     *
+     * @param string $directory
+     * @param string $namespace
+     * @param array $stack
+     * @return array
+     */
+    protected static function extractModelTypes($directory, $namespace, $stack = []): array
+    {
+        foreach (scandir($directory) as $item) {
+            if(in_array($item, ['.','..'])) continue;
+
+            $path = $directory . '/' . $item;
+
+            if(is_dir($path)) {
+                $stack = static::extractModelTypes($path, $namespace . '\\' . ucfirst($item), $stack);
+                continue;
+            }
+
+            $path = pathinfo($path);
+
+            if($path['extension'] !== 'php') {
+                continue;
+            }
+
+            $classname = $namespace . '\\' . ucfirst($path['filename']);
+
+            if(! is_a($classname, ObjectModel::class, true)) {
+                continue;
+            }
+
+            $type = (new $classname)->getType();
+
+            $stack[$type] = $classname;
+        }
+
+        return $stack;
     }
 
     /**
@@ -266,13 +367,45 @@ class Winbooks
      * Decode the response if it worked
      *
      * @param Response $response
-     * @return \stdClass|void
+     * @return mixed
      */
     protected function decode(Response $response)
     {
-        if($response->getStatusCode() == 200) {
-            return json_decode($response->getBody());
+        if($response->getStatusCode() !== 200) {
+            return null;
         }
+
+        $data = json_decode($response->getBody());
+
+        if(! is_array($data)) {
+            return $this->toModel($data);
+        }
+
+        return array_map(function($item) {
+            return $this->toModel($item);
+        }, $data);
+    }
+
+    /**
+     * Transform an incoming data object into a model
+     * instance when possible.
+     *
+     * @param null|\stdClass $data
+     * @return mixed
+     */
+    public function toModel($data)
+    {
+        if(! is_a($data, \stdClass::class)) {
+            return $data;
+        }
+
+        $attributes = (array) $data;
+
+        if(! isset($attributes['$type']) || ! static::isModelType($attributes['$type'])) {
+            return $data;
+        }
+
+        return static::makeModelForType($attributes['$type'], $attributes);
     }
 
     /**

@@ -85,7 +85,7 @@ abstract class ObjectModel implements JsonSerializable
      */
     public function __get(string $name)
     {
-        return $this->data[$name];
+        return $this->data[$name] ?? null;
     }
 
     /**
