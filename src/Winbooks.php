@@ -76,18 +76,18 @@ class Winbooks
      *
      * @param string $email
      * @param string $exchange_token
-     * @return \stdClass
+     * @return array
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function authenticate(string $email, string $exchange_token): \stdClass
+    public function authenticate(string $email, string $exchange_token): array
     {
         $data = $this->getAccessToken($email, $exchange_token);
 
         $this->email = $email;
-        $this->access_token = $data->access_token;
-        $this->refresh_token = $data->refresh_token;
+        $this->access_token = $data['access_token'];
+        $this->refresh_token = $data['refresh_token'];
 
-        return $data;
+        return [$data['access_token'], $data['refresh_token']];
     }
 
     /**
@@ -95,10 +95,10 @@ class Winbooks
      *
      * @param string $email
      * @param string $exchange_token
-     * @return \stdClass
+     * @return array
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getAccessToken(string $email, string $exchange_token): \stdClass
+    public function getAccessToken(string $email, string $exchange_token): array
     {
         return $this->getAuth($email, 'exchange_token', $exchange_token);
     }
@@ -109,10 +109,10 @@ class Winbooks
      * @param string $email
      * @param string $grant_type
      * @param string $token
-     * @return \stdClass
+     * @return array
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    protected function getAuth($email, $grant_type, $token): \stdClass
+    protected function getAuth($email, $grant_type, $token): array
     {
         $guzzle = new Client([
             'base_uri' => $this->api_host,
@@ -129,7 +129,7 @@ class Winbooks
             ]
         ]);
 
-        return json_decode($response->getBody());
+        return json_decode($response->getBody(), true);
     }
 
     /**
@@ -142,8 +142,8 @@ class Winbooks
         try {
             $auth = $this->getAuth($this->email, 'refresh_token', $this->refresh_token);
 
-            $this->access_token = $auth->access_token;
-            $this->refresh_token = $auth->refresh_token;
+            $this->access_token = $auth['access_token'];
+            $this->refresh_token = $auth['refresh_token'];
 
             $this->initialize();
         } catch(ClientException $exception) {
@@ -158,7 +158,7 @@ class Winbooks
      */
     public function initialize()
     {
-        if(!$this->authenticated()) {
+        if(! $this->authenticated()) {
             throw new UnauthenticatedException("Please authenticate first, by passing your e-mail and Exchange Token to the authenticate() method, or by providing your Access and Refresh Tokens to the constructor.");
         }
 
@@ -179,11 +179,11 @@ class Winbooks
      */
     protected function ensureInitialized()
     {
-        if(!$this->guzzle) {
+        if(! $this->guzzle) {
             $this->initialize();
         }
 
-        if(!$this->folder) {
+        if(! $this->folder) {
             throw new UndefinedFolderException("Please specify a folder before making requests.");
         }
     }

@@ -23,8 +23,8 @@ use Whitecube\Winbooks\Winbooks;
 // $access_token and $refresh_token can be null if you do not have them yet
 $winbooks = new Winbooks($access_token, $refresh_token);
 
-if(!$winbooks->authenticated()) {
-    $tokens = $winbooks->authenticate($email, $exchange_token);
+if(! $winbooks->authenticated()) {
+    [$access_token, $refresh_token] = $winbooks->authenticate($email, $exchange_token);
     // Store the tokens somewhere safe
 }
 
