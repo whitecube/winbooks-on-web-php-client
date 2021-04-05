@@ -412,18 +412,40 @@ class Winbooks
      * Make a manual request to the API
      *
      * @param callable $attempt
-     * @return \stdClass|void
+     * @param null|array $stack
+     * @return mixed
      * @throws InvalidTokensException
      * @throws UnauthenticatedException
      * @throws UndefinedFolderException
      */
-    public function request(callable $attempt)
+    public function request(callable $attempt, array $stack = null)
     {
         $this->ensureInitialized();
 
         $response = $this->attempt($attempt);
 
-        return $this->decode($response);
+        $result = $this->decode($response);
+
+        if($stack) {
+            $result = array_merge($stack, is_array($result) ? $result : [$result]);
+        }
+
+        if(! is_array($result) || ! $response->hasHeader('ContinuePath')) {
+            return $result;
+        }
+
+        // The REST API has indicated that the result was truncated, we should
+        // now continue filling the results array with the missing data. This
+        // is done by sending the request again including the API's response
+        // "ContinuePath" header until everything has been fetched.
+
+        return $this->request(function($options = []) use ($attempt, $response) {
+            $options = array_merge($options, [
+                'headers' => ['ContinuePath' => $response->getHeader('ContinuePath')[0]],
+            ]);
+
+            return $attempt($options);
+        }, $result);
     }
 
     /**
@@ -437,8 +459,8 @@ class Winbooks
      */
     public function all(string $oms)
     {
-        return $this->request(function() use ($oms) {
-            return $this->guzzle->get("app/$oms/Folder/$this->folder");
+        return $this->request(function($options = []) use ($oms) {
+            return $this->guzzle->get("app/$oms/Folder/$this->folder", $options);
         });
     }
 
@@ -447,6 +469,7 @@ class Winbooks
      *
      * @param string $om
      * @param string $code
+     * @param int $maxLevel
      * @return mixed
      * @throws InvalidTokensException
      * @throws UnauthenticatedException
@@ -454,8 +477,8 @@ class Winbooks
      */
     public function get(string $om, string $code, $maxLevel = 1)
     {
-        return $this->request(function() use ($om, $code, $maxLevel) {
-            return $this->guzzle->get("app/$om/$code/Folder/$this->folder?maxLevel=$maxLevel");
+        return $this->request(function($options = []) use ($om, $code, $maxLevel) {
+            return $this->guzzle->get("app/$om/$code/Folder/$this->folder?maxLevel=$maxLevel", $options);
         });
     }
 
@@ -476,10 +499,10 @@ class Winbooks
             $data['Code'] = $code;
         }
 
-        return $this->request(function() use ($om, $code, $data) {
-            return $this->guzzle->post("app/$om/$code/Folder/$this->folder", [
+        return $this->request(function($options = []) use ($om, $code, $data) {
+            return $this->guzzle->post("app/$om/$code/Folder/$this->folder", array_merge($options, [
                 'json' => $data
-            ]);
+            ]));
         });
     }
 
@@ -495,10 +518,10 @@ class Winbooks
      */
     public function addMany(string $oms, array $objects)
     {
-        return $this->request(function() use ($oms, $objects) {
-            return $this->guzzle->post("app/$oms/Folder/$this->folder", [
+        return $this->request(function($options = []) use ($oms, $objects) {
+            return $this->guzzle->post("app/$oms/Folder/$this->folder", array_merge($options, [
                 'json' => $objects
-            ]);
+            ]));
         });
     }
 
@@ -515,10 +538,10 @@ class Winbooks
      */
     public function update(string $om, string $code, array $data)
     {
-        return $this->request(function() use ($om, $code, $data) {
-            return $this->guzzle->put("app/$om/$code/Folder/$this->folder", [
+        return $this->request(function($options = []) use ($om, $code, $data) {
+            return $this->guzzle->put("app/$om/$code/Folder/$this->folder", array_merge($options, [
                 'json' => $data
-            ]);
+            ]));
         });
     }
 
@@ -534,10 +557,10 @@ class Winbooks
      */
     public function updateMany(string $oms, array $objects)
     {
-        return $this->request(function() use ($oms, $objects) {
-            return $this->guzzle->put("app/$oms/Folder/$this->folder", [
+        return $this->request(function($options = []) use ($oms, $objects) {
+            return $this->guzzle->put("app/$oms/Folder/$this->folder", array_merge($options, [
                 'json' => $objects
-            ]);
+            ]));
         });
     }
 
@@ -553,8 +576,8 @@ class Winbooks
      */
     public function delete(string $om, string $code)
     {
-        return $this->request(function() use ($om, $code) {
-            return $this->guzzle->delete("app/$om/$code/Folder/$this->folder");
+        return $this->request(function($options = []) use ($om, $code) {
+            return $this->guzzle->delete("app/$om/$code/Folder/$this->folder", $options);
         });
     }
 
@@ -569,13 +592,13 @@ class Winbooks
      */
     public function addModel(ObjectModel $model)
     {
-        return $this->request(function() use ($model) {
+        return $this->request(function($options = []) use ($model) {
             $om = $model->getOM();
             $code = $model->getCode();
 
-            return $this->guzzle->post("app/$om/$code/Folder/$this->folder", [
+            return $this->guzzle->post("app/$om/$code/Folder/$this->folder", array_merge($options, [
                 'json' => $model
-            ]);
+            ]));
         });
     }
 
@@ -590,12 +613,12 @@ class Winbooks
      */
     public function addModels(array $models)
     {
-        return $this->request(function() use ($models) {
+        return $this->request(function($options = []) use ($models) {
             $oms = $models[0]->getOMS();
 
-            return $this->guzzle->post("app/$oms/Folder/$this->folder", [
+            return $this->guzzle->post("app/$oms/Folder/$this->folder", array_merge($options, [
                 'json' => $models
-            ]);
+            ]));
         });
     }
 

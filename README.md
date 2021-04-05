@@ -41,7 +41,7 @@ $winbooks->get(/*...*/)
 ```
 
 ### Getting data
-All getter methods will return the JSON data directly from WoW, already decoded.
+All getter methods will return the JSON data directly from WoW, already decoded and wrapped into Object Model instances when possible.
 
 To get all results from an object model, use the `all($object_model)` method.
 
@@ -49,8 +49,11 @@ To get all results from an object model, use the `all($object_model)` method.
 $customers = $winbooks->all('Customers');
 ```
 
+> **Warning**: Depending on the size of your dataset and the server's memory limit, `all()` can cause critical server errors since its results are not paginated. The API wrapper will continue fetching objects until Winbook's REST API indicates everything has been transferred. This is quite a big issue, documented in [Winbook's documentation](https://help.winbooks.be/display/DEV/1.+Query+Data#id-1.QueryData-E.Chunkingdata), which will not be fixed in this package until Winbook's REST API will implement proper pagination options.
+
 To get a single result from an object model, use the `get($object_model, $code)` method.
-> Note: you can substitute $code for the ID if you have it.
+
+> **Note**: you can substitute $code for the ID if you have it.
 
 ```php
 $vlad = $winbooks->get('Customer', 'VLADIMIR');
