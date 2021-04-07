@@ -23,35 +23,26 @@ it('can instanciate an object model based on a given type', function() {
     expect($model)->toBeInstanceOf(StockTransaction::class);
 });
 
-it('cannot transform other datatypes than stdClasses to models', function() {
-    $winbooks = new Winbooks();
-
-    expect($winbooks->toModel(null))->toBeNull();
-    expect($winbooks->toModel(true))->toBeTrue();
-    expect($winbooks->toModel([]))->toBeArray();
-    expect($winbooks->toModel(new StockTransaction))->toBeInstanceOf(StockTransaction::class);
+it('cannot transform other datatypes than arrays to models', function() {
+    expect(Winbooks::toModel(null))->toBeNull();
+    expect(Winbooks::toModel(true))->toBeTrue();
+    expect(Winbooks::toModel(123))->toBeInt();
+    expect(Winbooks::toModel(new StockTransaction))->toBeInstanceOf(StockTransaction::class);
 });
 
-it('cannot transform stdClasses with wrong $type attributes', function() {
-    $winbooks = new Winbooks();
+it('cannot transform arrays with wrong $type attributes', function() {
+    $withoutType = ['foo' => 'bar'];
+    $withUndefinedType = ['$type' => 'foobaz','foo' => 'bar'];
 
-    $withoutType = new \stdClass();
-    $withoutType->foo = 'bar';
-
-    $withUndefinedType = new \stdClass();
-    $withUndefinedType->{'$type'} = 'foo';
-    $withUndefinedType->foo = 'bar';
-
-    expect($winbooks->toModel($withoutType))->toBeInstanceOf(\stdClass::class);
-    expect($winbooks->toModel($withUndefinedType))->toBeInstanceOf(\stdClass::class);
+    expect(Winbooks::toModel($withoutType))->toBeArray();
+    expect(Winbooks::toModel($withUndefinedType))->toBeArray();
 });
 
-it('can transform stdClasses with defined $type attribute', function() {
-    $winbooks = new Winbooks();
+it('can transform arrays with defined $type attribute', function() {
+    $data = [
+        '$type' => 'Winbooks.TORM.OM.Logistics.StockTransaction, Winbooks.TORM.OM',
+        'foo' => 'bar'
+    ];
 
-    $data = new \stdClass();
-    $data->{'$type'} = 'Winbooks.TORM.OM.Logistics.StockTransaction, Winbooks.TORM.OM';
-    $data->foo = 'bar';
-
-    expect($winbooks->toModel($data))->toBeInstanceOf(StockTransaction::class);
+    expect(Winbooks::toModel($data))->toBeInstanceOf(StockTransaction::class);
 });

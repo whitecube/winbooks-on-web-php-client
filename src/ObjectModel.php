@@ -5,6 +5,7 @@ namespace Whitecube\Winbooks;
 use ArrayAccess;
 use ReflectionClass;
 use JsonSerializable;
+use InvalidArgumentException;
 
 abstract class ObjectModel implements ArrayAccess, JsonSerializable
 {
@@ -74,6 +75,77 @@ abstract class ObjectModel implements ArrayAccess, JsonSerializable
     }
 
     /**
+     * Recursively merge new incoming data into this model's attributes
+     *
+     * @param mixed $value
+     * @return $this
+     * @throws \InvalidArgumentException
+     */
+    public function merge($value)
+    {
+        if(is_a($value, static::class)) {
+            $value = $value->getAttributes();
+        }
+
+        if(! is_array($value)) {
+            $type = is_object($value) ? get_class($value) : gettype($value);
+            throw new InvalidArgumentException('Cannot merge "' . $type . '" into ObjectModel "' . get_class() . '".');
+        }
+
+        $this->attributes = $this->mergeRecursiveDistinct($this->attributes, $value);
+
+        return $this;
+    }
+
+    /**
+     * Recursively merge new incoming data into this model's attributes
+     *
+     * @param array $base
+     * @param array $array
+     * @return array
+     */
+    protected function mergeRecursiveDistinct($base, $array)
+    {
+        if(! $this->isAssociativeArray($base) && ! $this->isAssociativeArray($array)) {
+            return array_merge($base, $array);
+        }
+
+        foreach ($array as $key => $value) {
+            if(! is_array($value) || ! is_array($base[$key] ?? null)) {
+                $base[$key] = $value;
+                continue;
+            }
+
+            $base[$key] = $this->mergeRecursiveDistinct($base[$key], $value);
+        }
+
+        return $base;
+    }
+
+    /**
+     * Check if given array is associative (in opposition to sequential)
+     *
+     * @param array $base
+     * @return bool
+     */
+    protected function isAssociativeArray(array $array): bool
+    {
+        $keys = array_keys($array);
+
+        return array_keys($keys) !== $keys;
+    }
+
+    /**
+     * Get the model's raw attributes array
+     *
+     * @return array
+     */
+    public function getAttributes(): array
+    {
+        return $this->attributes;
+    }
+
+    /**
      * Check if a given attribute exists in the model's attributes
      *
      * @param string $attribute
@@ -139,7 +211,17 @@ abstract class ObjectModel implements ArrayAccess, JsonSerializable
      */
     public function get(string $attribute)
     {
-        return $this->attributes[$attribute] ?? null;
+        $value = $this->attributes[$attribute] ?? null;
+
+        if(is_a($value, self::class)) {
+            return $value;
+        }
+
+        if(is_a($value = Winbooks::toModel($value), self::class)) {
+            $this->set($attribute, $value);
+        }
+
+        return $value;
     }
 
     /**

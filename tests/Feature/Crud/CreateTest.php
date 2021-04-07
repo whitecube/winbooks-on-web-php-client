@@ -25,7 +25,7 @@ it('can add a customer', function() {
 
     $result = $this->winbooks->add('Customer', 'ALICE', $customer);
 
-    $this->assertStringContainsString('Customer/ALICE/Folder/PARFIWEB_DEMO', $result->Href);
+    $this->assertStringContainsString('Customer/ALICE/Folder/PARFIWEB_DEMO', $result['Href']);
 
     cleanup('Customer', 'ALICE');
 });
@@ -89,7 +89,7 @@ it('can add a customer from a customer model instance', function() {
 
     $result = $this->winbooks->addModel($customer);
 
-    $this->assertStringContainsString('Customer/ALICE/Folder/PARFIWEB_DEMO', $result->Href);
+    $this->assertStringContainsString('Customer/ALICE/Folder/PARFIWEB_DEMO', $result['Href']);
 
     cleanup('Customer', 'ALICE');
 });

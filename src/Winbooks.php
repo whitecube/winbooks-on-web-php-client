@@ -71,6 +71,22 @@ class Winbooks
     }
 
     /**
+     * Transform an incoming data object into a model
+     * instance when possible.
+     *
+     * @param null|\stdClass $data
+     * @return mixed
+     */
+    public static function toModel($data)
+    {
+        if(! is_array($data) || ! isset($data['$type']) || ! static::isModelType($data['$type'])) {
+            return $data;
+        }
+
+        return static::makeModelForType($data['$type'], $data);
+    }
+
+    /**
      * Check if given string is a valid model type
      *
      * @param mixed $type
@@ -393,76 +409,64 @@ class Winbooks
      * Decode the response if it worked
      *
      * @param Response $response
+     * @param bool $asCollection
      * @return mixed
      */
-    protected function decode(Response $response)
+    protected function decode(Response $response, bool $asCollection)
     {
         if($response->getStatusCode() !== 200) {
             return null;
         }
 
-        $data = json_decode($response->getBody());
+        $data = json_decode($response->getBody(), true);
 
-        if(! is_array($data)) {
-            return $this->toModel($data);
+        if(! $asCollection) {
+            return static::toModel($data);
         }
 
         return array_map(function($item) {
-            return $this->toModel($item);
+            return static::toModel($item);
         }, $data);
-    }
-
-    /**
-     * Transform an incoming data object into a model
-     * instance when possible.
-     *
-     * @param null|\stdClass $data
-     * @return mixed
-     */
-    public function toModel($data)
-    {
-        if(! is_a($data, \stdClass::class)) {
-            return $data;
-        }
-
-        $attributes = (array) $data;
-
-        if(! isset($attributes['$type']) || ! static::isModelType($attributes['$type'])) {
-            return $data;
-        }
-
-        return static::makeModelForType($attributes['$type'], $attributes);
     }
 
     /**
      * Make a manual request to the API
      *
      * @param callable $attempt
+     * @param bool $asCollection
      * @param null|callable $original
-     * @param null|array $stack
+     * @param null|mixed $stack
      * @return mixed
      * @throws InvalidTokensException
      * @throws UnauthenticatedException
      * @throws UndefinedFolderException
      */
-    public function request(callable $attempt, callable $original = null, array $stack = null)
+    public function request(callable $attempt, bool $asCollection = false, callable $original = null, $stack = null)
     {
         $this->ensureInitialized();
 
         $response = $this->attempt($attempt);
 
-        $result = $this->decode($response);
+        $hasMore = $response->hasHeader('ContinuePath');
 
-        if($stack) {
-            $result = array_merge($stack, is_array($result) ? $result : [$result]);
+        $result = $this->decode($response, $asCollection);
+
+        if($asCollection && ! $stack) {
+            $stack = new Collection();
         }
 
-        if(! is_array($result) || ! $response->hasHeader('ContinuePath')) {
+        if(is_a($stack, Collection::class)) {
+            $result = $stack->fill($result, $hasMore);
+        } else if(is_a($stack, ObjectModel::class)) {
+            $result = $stack->merge($result);
+        }
+
+        if(! $hasMore) {
             return $result;
         }
 
         // The REST API has indicated that the result was truncated, we should
-        // now continue filling the results array with the missing data. This
+        // now continue filling the obtained result with the missing data. This
         // is done by sending the original request again including the API's
         // response "ContinuePath" header until everything has been fetched.
 
@@ -476,7 +480,7 @@ class Winbooks
             return $original($options);
         };
 
-        return $this->request($attempt, $original, $result);
+        return $this->request($attempt, $asCollection, $original, $result);
     }
 
     /**
@@ -492,7 +496,7 @@ class Winbooks
     {
         return $this->request(function($options = []) use ($oms) {
             return $this->guzzle->get("app/$oms/Folder/$this->folder", $options);
-        });
+        }, true);
     }
 
     /**
@@ -524,7 +528,7 @@ class Winbooks
             return $this->guzzle->post("app/$oms/Folder/$this->folder/ExecuteCriteria", array_merge($options, [
                 'json' => $query,
             ]));
-        });
+        }, true);
     }
 
     /**
