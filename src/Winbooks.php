@@ -438,13 +438,14 @@ class Winbooks
      * Make a manual request to the API
      *
      * @param callable $attempt
+     * @param null|callable $original
      * @param null|array $stack
      * @return mixed
      * @throws InvalidTokensException
      * @throws UnauthenticatedException
      * @throws UndefinedFolderException
      */
-    public function request(callable $attempt, array $stack = null)
+    public function request(callable $attempt, callable $original = null, array $stack = null)
     {
         $this->ensureInitialized();
 
@@ -462,16 +463,20 @@ class Winbooks
 
         // The REST API has indicated that the result was truncated, we should
         // now continue filling the results array with the missing data. This
-        // is done by sending the request again including the API's response
-        // "ContinuePath" header until everything has been fetched.
+        // is done by sending the original request again including the API's
+        // response "ContinuePath" header until everything has been fetched.
 
-        return $this->request(function($options = []) use ($attempt, $response) {
+        $original = $original ?? $attempt;
+
+        $attempt = function($options = []) use ($original, $response) {
             $options = array_merge($options, [
                 'headers' => ['ContinuePath' => $response->getHeader('ContinuePath')[0]],
             ]);
 
-            return $attempt($options);
-        }, $result);
+            return $original($options);
+        };
+
+        return $this->request($attempt, $original, $result);
     }
 
     /**
