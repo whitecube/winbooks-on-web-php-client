@@ -49,7 +49,7 @@ it('throws exception if all tokens are invalid', function() {
 })->throws(\Whitecube\Winbooks\Exceptions\InvalidRefreshTokenException::class);
 
 
-it('still_throws_underlying_API_exceptions', function() {
+it('still throws underlying API exceptions', function() {
     authenticate();
 
     $this->winbooks->folder('PARFIWEB_DEMO')->all('Customerz');
