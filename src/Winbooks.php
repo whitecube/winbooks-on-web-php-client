@@ -95,13 +95,32 @@ class Winbooks
      */
     public static function makeModelForType(string $type, array $attributes = []): ObjectModel
     {
-        $classname = static::getModelTypes()[$type] ?? null;
+        $model = static::getModelTypes()[$type] ?? null;
 
-        if(! $classname) {
+        if(! $model) {
             throw new UndefinedObjectModelException('Undefined object model type "' . $type . '".');
         }
 
+        $classname = $model['classname'];
+
         return new $classname($attributes);
+    }
+
+    /**
+     * Find a Model Type by given attribute
+     *
+     * @param string $attribute
+     * @param string $value
+     * @return null|array
+     */
+    public static function findModelType($attribute, $value): ?array
+    {
+        foreach (static::getModelTypes() as $model) {
+            if(($model[$attribute] ?? null) !== $value) continue;
+            return $model;
+        }
+
+        return null;
     }
 
     /**
@@ -154,9 +173,16 @@ class Winbooks
                 continue;
             }
 
-            $type = (new $classname)->getType();
+            $instance = new $classname();
 
-            $stack[$type] = $classname;
+            $type = $instance->getType();
+
+            $stack[$type] = [
+                'classname' => $classname,
+                'type' => $type,
+                'om' => $instance->getOM(),
+                'oms' => $instance->getOMS()
+            ];
         }
 
         return $stack;
@@ -461,6 +487,38 @@ class Winbooks
     {
         return $this->request(function($options = []) use ($oms) {
             return $this->guzzle->get("app/$oms/Folder/$this->folder", $options);
+        });
+    }
+
+    /**
+     * Execute criteria for an object model namespace
+     *
+     * @param string $oms
+     * @param array $query
+     * @return mixed
+     * @throws InvalidTokensException
+     * @throws UnauthenticatedException
+     * @throws UndefinedFolderException
+     */
+    public function query(string $oms, array $query = [])
+    {
+        $model = static::findModelType('oms', $oms);
+
+        if(is_null($model)) {
+            throw new UndefinedObjectModelException('Undefined object model for oms "' . $oms . '".');
+        }
+
+        $defaults = [
+            'EntityType' => $model['type'],
+            'Alias' => 'this',
+        ];
+
+        $query = array_merge($defaults, $query);
+
+        return $this->request(function($options = []) use ($oms, $query) {
+            return $this->guzzle->post("app/$oms/Folder/$this->folder/ExecuteCriteria", array_merge($options, [
+                'json' => $query,
+            ]));
         });
     }
 
