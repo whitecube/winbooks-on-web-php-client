@@ -153,7 +153,7 @@ abstract class ObjectModel implements ArrayAccess, JsonSerializable
      */
     public function has($attribute): bool
     {
-        return array_key_exists($attribute, $this->attributes);
+        return array_key_exists(ucfirst($attribute), $this->attributes);
     }
 
     /**
@@ -176,7 +176,7 @@ abstract class ObjectModel implements ArrayAccess, JsonSerializable
      */
     public function set(string $attribute, $value)
     {
-        $this->attributes[$attribute] = $value;
+        $this->attributes[ucfirst($attribute)] = $value;
     }
 
     /**
@@ -211,7 +211,7 @@ abstract class ObjectModel implements ArrayAccess, JsonSerializable
      */
     public function get(string $attribute)
     {
-        $value = $this->attributes[$attribute] ?? null;
+        $value = $this->attributes[ucfirst($attribute)] ?? null;
 
         if(is_a($value, self::class)) {
             return $value;
@@ -258,7 +258,7 @@ abstract class ObjectModel implements ArrayAccess, JsonSerializable
             return;
         }
 
-        unset($this->attributes[$attribute]);
+        unset($this->attributes[ucfirst($attribute)]);
     }
 
     /**
