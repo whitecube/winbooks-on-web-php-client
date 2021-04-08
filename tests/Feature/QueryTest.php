@@ -1,12 +1,16 @@
 <?php
 
 use Whitecube\Winbooks\Query;
+use Whitecube\Winbooks\Query\Join;
 use Whitecube\Winbooks\Query\Operator;
+use Whitecube\Winbooks\Models\Third;
 use Whitecube\Winbooks\Models\Customer;
+use Whitecube\Winbooks\Models\Logistics\DocumentHeader;
+use Whitecube\Winbooks\Exceptions\InvalidJoinException;
 
 it('can construct with object model and optional alias', function() {
-    $withAlias = new Query(new Customer(), 'foo');
-    $withoutAlias = new Query(new Customer());
+    $withAlias = new Query(new Customer, 'foo');
+    $withoutAlias = new Query(new Customer);
 
     $withAlias = json_decode(json_encode($withAlias), true);
     $withoutAlias = json_decode(json_encode($withoutAlias), true);
@@ -23,7 +27,7 @@ it('can construct with object model and optional alias', function() {
 });
 
 it('can add properties to the query\'s projectionsList', function() {
-    $query = new Query(new Customer());
+    $query = new Query(new Customer);
 
     expect($query->select('foo'))->toBeInstanceOf(Query::class);
 
@@ -41,7 +45,7 @@ it('can add properties to the query\'s projectionsList', function() {
 });
 
 it('can add properties to the query\'s projectionsList using custom operator', function() {
-    $query = new Query(new Customer());
+    $query = new Query(new Customer);
 
     expect($query->selectOperator('AVG','foo','bar'))->toBeInstanceOf(Query::class);
 
@@ -59,7 +63,7 @@ it('can add properties to the query\'s projectionsList using custom operator', f
 });
 
 it('can empty projectionsList', function() {
-    $query = (new Query(new Customer()))->select('foo','bar');
+    $query = (new Query(new Customer))->select('foo','bar');
 
     expect($query->select(null))->toBeInstanceOf(Query::class);
 
@@ -69,7 +73,7 @@ it('can empty projectionsList', function() {
 });
 
 it('can add where condition using 2 parameters', function() {
-    $query = new Query(new Customer());
+    $query = new Query(new Customer);
 
     expect($query->where('foo','bar'))->toBeInstanceOf(Query::class);
 
@@ -88,7 +92,7 @@ it('can add where condition using 2 parameters', function() {
 });
 
 it('can add where condition using 3 parameters', function() {
-    $query = new Query(new Customer());
+    $query = new Query(new Customer);
 
     expect($query->where('foo','>',10))->toBeInstanceOf(Query::class);
 
@@ -107,11 +111,11 @@ it('can add where condition using 3 parameters', function() {
 });
 
 it('throws an exception when providing too few parameters to where condition', function() {
-    (new Query(new Customer()))->where('foo');
+    (new Query(new Customer))->where('foo');
 })->throws(\InvalidArgumentException::class);
 
 it('can add a "property comparison" where condition when providing a property as value', function() {
-    $query = new Query(new Customer());
+    $query = new Query(new Customer);
 
     $query->where('foo','>',Query::property('bar'));
 
@@ -130,7 +134,7 @@ it('can add a "property comparison" where condition when providing a property as
 });
 
 it('can add a default ascending order by clause', function() {
-    $query = new Query(new Customer());
+    $query = new Query(new Customer);
 
     expect($query->orderBy('foo'))->toBeInstanceOf(Query::class);
 
@@ -149,7 +153,7 @@ it('can add a default ascending order by clause', function() {
 });
 
 it('can add a descending order by clause', function() {
-    $query = new Query(new Customer());
+    $query = new Query(new Customer);
 
     expect($query->orderBy('foo', 'desc'))->toBeInstanceOf(Query::class);
 
@@ -168,7 +172,7 @@ it('can add a descending order by clause', function() {
 });
 
 it('can add multiple ordering clauses', function() {
-    $query = new Query(new Customer());
+    $query = new Query(new Customer);
 
     $query->orderBy('foo')->orderBy('bar', 'desc');
 
@@ -193,7 +197,7 @@ it('can add multiple ordering clauses', function() {
 });
 
 it('can remove ordering clauses', function() {
-    $query = new Query(new Customer());
+    $query = new Query(new Customer);
 
     $query->orderBy('foo')->orderBy('bar', 'desc');
 
@@ -202,4 +206,99 @@ it('can remove ordering clauses', function() {
     $query = json_decode(json_encode($query), true);
 
     expect($query)->not->toHaveKey('Orders');
+});
+
+it('can add a join instance to the associations', function() {
+    $query = new Query(new Customer);
+
+    $join = (new Join(new Customer, new Third))
+        ->on('Foo','=','Bar')
+        ->alias('fooAlias')
+        ->owner('fooOwner');
+
+
+    expect($query->associate($join, function($join) {
+        $join->on('baz','=','test')->alias('bazAlias')->owner('bazOwner');
+    }))->toBeInstanceOf(Query::class);
+
+    $query = json_decode(json_encode($query), true);
+
+    expect($query)->toMatchArray([
+        'Association' => [
+            'bazAlias' => [
+                'OwnerAlias' => 'bazOwner',
+                'AliasName' => 'bazAlias',
+                'Type' => 'Winbooks.TORM.OM.Third, Winbooks.TORM.OM',
+                'JoinType' => Operator::TYPE_EQPROPERTY,
+                'LeftProperty' => 'Baz',
+                'RightProperty' => 'Test',
+            ]
+        ]
+    ]);
+});
+
+it('cannot add an unconfigured join instance to the associations', function() {
+    $query = new Query(new Customer);
+
+    $join = new Join(new Customer, new Third);
+
+    $query->associate($join);
+})->throws(InvalidJoinException::class);
+
+it('can add an association using Query::join method', function() {
+    $target = new DocumentHeader();
+
+    $cases = [
+        $target,
+        $target->getType(),
+        get_class($target),
+        $target->getOM(),
+        $target->getOMS()
+    ];
+
+    foreach ($cases as $model) {
+        $query = new Query(new Customer);
+
+        $query->join($model, function($join) {
+            $join->on('Foo','Bar')->alias('foo');
+        });
+
+        expect($join = json_decode(json_encode($query), true)['Association']['foo'] ?? null)->toBeArray();
+        expect($join)->not->toHaveKey('OwnerAlias');
+        expect($join)->toHaveKey('AliasName');
+        expect($join)->toHaveKey('Type');
+        expect($join)->toHaveKey('JoinType');
+        expect($join)->toHaveKey('LeftProperty');
+        expect($join)->toHaveKey('RightProperty');
+    }
+});
+
+it('can add an association using Query::join method and use an existing relation preconfiguration', function() {
+    $query = new Query(new Customer);
+
+    expect($query->join(new Third))->toBeInstanceOf(Query::class);
+
+    expect($join = json_decode(json_encode($query), true)['Association']['third'] ?? null)->toBeArray();
+    expect($join)->not->toHaveKey('OwnerAlias');
+    expect($join)->toHaveKey('AliasName');
+    expect($join)->toHaveKey('Type');
+    expect($join)->toHaveKey('JoinType');
+    expect($join)->toHaveKey('LeftProperty');
+    expect($join)->toHaveKey('RightProperty');
+});
+
+it('can add an association using Query::with method and use its existing relation preconfiguration', function() {
+    $query = new Query(new Customer);
+
+    expect($query->with('third', function($join) {
+        $join->alias('foo')->owner('baz');
+    }))->toBeInstanceOf(Query::class);
+
+    expect($join = json_decode(json_encode($query), true)['Association']['foo'] ?? null)->toBeArray();
+    expect($join)->toHaveKey('OwnerAlias');
+    expect($join)->toHaveKey('AliasName');
+    expect($join)->toHaveKey('Type');
+    expect($join)->toHaveKey('JoinType');
+    expect($join)->toHaveKey('LeftProperty');
+    expect($join)->toHaveKey('RightProperty');
 });

@@ -1,17 +1,19 @@
 <?php
 
 use Whitecube\Winbooks\Winbooks;
+use Whitecube\Winbooks\ObjectModel;
+use Whitecube\Winbooks\Query\Relation;
 use Whitecube\Winbooks\Models\Customer;
 use function Tests\authenticate;
 
-test('a model can accept values in its constructor', function() {
+it('can accept values in its constructor', function() {
     $customer = new Customer(['Foo' => 'bar']);
 
     expect($customer->Foo)->toBe('bar');
     expect($customer->getAttributes())->toBeArray();
 });
 
-test('a model can set properties methodologically', function() {
+it('can set properties methodologically', function() {
     $customer = new Customer();
     $customer->set('foo', 'bar');
 
@@ -21,7 +23,7 @@ test('a model can set properties methodologically', function() {
     expect($attributes['Foo'] ?? null)->toBe('bar');
 });
 
-test('a model can set properties dynamically', function() {
+it('can set properties dynamically', function() {
     $customer = new Customer();
     $customer->foo = 'bar';
 
@@ -31,7 +33,7 @@ test('a model can set properties dynamically', function() {
     expect($attributes['Foo'] ?? null)->toBe('bar');
 });
 
-test('a model can set properties as an array', function() {
+it('can set properties as an array', function() {
     $customer = new Customer();
     $customer['foo'] = 'bar';
 
@@ -41,28 +43,28 @@ test('a model can set properties as an array', function() {
     expect($attributes['Foo'] ?? null)->toBe('bar');
 });
 
-test('a model can return properties methodologically', function() {
+it('can return properties methodologically', function() {
     $customer = new Customer(['Foo' => 'bar']);
 
     // "get" should automatically capitalize the attribute's first char
     expect($customer->get('foo'))->toBe('bar');
 });
 
-test('a model can return properties dynamically', function() {
+it('can return properties dynamically', function() {
     $customer = new Customer(['Foo' => 'bar']);
 
     // "get" should automatically capitalize the attribute's first char
     expect($customer->foo)->toBe('bar');
 });
 
-test('a model can return properties as an array', function() {
+it('can return properties as an array', function() {
     $customer = new Customer(['Foo' => 'bar']);
 
     // "get" should automatically capitalize the attribute's first char
     expect($customer['foo'])->toBe('bar');
 });
 
-test('a model can check property existence', function() {
+it('can check property existence', function() {
     $customer = new Customer(['Foo' => 'bar']);
 
     expect($customer->has('bar'))->toBeFalse();
@@ -71,7 +73,7 @@ test('a model can check property existence', function() {
     expect($customer->has('foo'))->toBeTrue();
 });
 
-test('a model can remove properties methodologically', function() {
+it('can remove properties methodologically', function() {
     $customer = new Customer(['Foo' => 'bar', 'Baz' => 'test']);
 
     // "remove" should automatically capitalize the attribute's first char
@@ -81,7 +83,7 @@ test('a model can remove properties methodologically', function() {
     expect($customer->has('foo'))->toBeTrue();
 });
 
-test('a model can remove properties as an array', function() {
+it('can remove properties as an array', function() {
     $customer = new Customer(['Foo' => 'bar', 'Baz' => 'test']);
 
     // "remove" should automatically capitalize the attribute's first char
@@ -91,7 +93,7 @@ test('a model can remove properties as an array', function() {
     expect($customer->has('foo'))->toBeTrue();
 });
 
-test('a model can be serialized into the correct JSON structure', function() {
+it('can be serialized into the correct JSON structure', function() {
     $customer = new Customer(['Foo' => 'bar']);
     $encoded = json_encode($customer);
 
@@ -99,7 +101,7 @@ test('a model can be serialized into the correct JSON structure', function() {
     $this->assertStringContainsString('"$type":"Winbooks.TORM.OM.Customer, Winbooks.TORM.OM"', $encoded);
 });
 
-test('a model can return its Code or its Id as a fallback', function() {
+it('can return its Code or its Id as a fallback', function() {
     $alice = new Customer(['Code' => 'ALICE']);
     $john = new Customer(['Id' => '1234']);
     $jane = new Customer();
@@ -107,5 +109,20 @@ test('a model can return its Code or its Id as a fallback', function() {
     expect($alice->getCode())->toBe('ALICE');
     expect($john->getCode())->toBe('1234');
     expect($jane->getCode())->toBeNull();
+});
+
+it('can define a relation', function() {
+    $model = new class () extends ObjectModel {
+        public function getType(): string { return 'test'; }
+        public function getFooRelation()
+        {
+            return $this->relatesTo(Customer::class);
+        }
+    };
+
+    $relation = $model->getRelationFor(new Customer);
+
+    expect($relation)->toBeInstanceOf(Relation::class);
+    expect($relation->getAlias())->toBe('foo');
 });
 

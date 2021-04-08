@@ -3,7 +3,9 @@
 namespace Whitecube\Winbooks;
 
 use JsonSerializable;
+use Whitecube\Winbooks\Winbooks;
 use Whitecube\Winbooks\ObjectModel;
+use Whitecube\Winbooks\Query\Join;
 use Whitecube\Winbooks\Query\Operator;
 use Whitecube\Winbooks\Query\Property;
 
@@ -29,6 +31,13 @@ class Query implements JsonSerializable
      * @var array
      */
     protected $projections = [];
+
+    /**
+     * The query associations (joins)
+     *
+     * @var array
+     */
+    protected $associations = [];
 
     /**
      * The query conditions (wheres)
@@ -104,6 +113,7 @@ class Query implements JsonSerializable
      *
      * @param array $definition
      * @return $this
+     * @throws InvalidArgumentException
      */
     public function where(...$definition)
     {
@@ -167,6 +177,65 @@ class Query implements JsonSerializable
     }
 
     /**
+     * Add a single association join
+     *
+     * @param string|\Whitecube\Winbooks\ObjectModel $model
+     * @param null|callable $closure
+     * @return $this
+     */
+    public function join($target, callable $closure = null)
+    {
+        $target = static::model($target);
+
+        if(! ($join = $this->model->getRelationFor($target))) {
+            $join = new Join($this->model, $target);
+        }
+
+        return $this->associate($join, $closure);
+    }
+
+    /**
+     * Add a single association join based on a model relation
+     *
+     * @param string $relation
+     * @param null|callable $closure
+     * @return $this
+     * @throws InvalidArgumentException
+     */
+    public function with(string $relation, callable $closure = null)
+    {
+        $method = 'get' . ucfirst($relation) . 'Relation';
+
+        if(! method_exists($this->model, $method)) {
+            throw new InvalidArgumentException('Relation "' . $relation . '" does not exist on model ' . get_class($this->model));
+        }
+
+        $relation = $this->model->$method();
+
+        return $this->associate($relation, $closure);
+    }
+
+    /**
+     * Add a single association
+     *
+     * @param \Whitecube\Winbooks\Query\Join $join
+     * @param null|callable $closure
+     * @return $this
+     */
+    public function associate(Join $join, callable $closure = null)
+    {
+        if($closure) {
+            $closure($join);
+        }
+
+        $join->failIfNotUsable();
+
+        $this->associations[$join->getAlias()] = $join;
+
+        return $this;
+    }
+
+    /**
      * Create a valid operator instance
      *
      * @param int|string|\Whitecube\Winbooks\Query\Operator $value
@@ -194,6 +263,33 @@ class Query implements JsonSerializable
         }
 
         return new Property($value);
+    }
+
+    /**
+     * Create a valid model instance
+     *
+     * @param string|\Whitecube\Winbooks\ObjectModel $value
+     * @return \Whitecube\Winbooks\ObjectModel
+     */
+    public static function model($value)
+    {
+        if(is_a($value, ObjectModel::class)) {
+            return $value;
+        }
+
+        if(Winbooks::isModelType($value)) {
+            return Winbooks::makeModelForType($value);
+        }
+
+        $type = null;
+
+        foreach (['classname', 'om', 'oms'] as $attribute) {
+            if(! ($definition = Winbooks::findModelType($attribute, $value))) continue;
+            $type = $definition['type'];
+            break;
+        }
+
+        return Winbooks::makeModelForType($type);
     }
 
     /**
@@ -227,6 +323,10 @@ class Query implements JsonSerializable
             'EntityType' => $this->model->getType(),
             'Alias' => $this->alias,
         ];
+
+        if($this->associations) {
+            $query['Association'] = $this->associations;
+        }
 
         if($this->projections) {
             $query['ProjectionsList'] = $this->projections;

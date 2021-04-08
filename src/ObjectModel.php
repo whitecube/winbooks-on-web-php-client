@@ -4,8 +4,10 @@ namespace Whitecube\Winbooks;
 
 use ArrayAccess;
 use ReflectionClass;
+use ReflectionMethod;
 use JsonSerializable;
 use InvalidArgumentException;
+use Whitecube\Winbooks\Query\Relation;
 
 abstract class ObjectModel implements ArrayAccess, JsonSerializable
 {
@@ -72,6 +74,45 @@ abstract class ObjectModel implements ArrayAccess, JsonSerializable
     public function getOMS(): string
     {
         return $this->getOM() . 's';
+    }
+
+    /**
+     * Create a relation definition
+     *
+     * @param string $classname
+     * @return \Whitecube\Winbooks\Query\Relation
+     */
+    protected function relatesTo($classname): Relation
+    {
+        $method = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]['function'] ?? null;
+
+        $target = new $classname();
+
+        return new Relation($this, $target, Relation::extractRelationName($method));
+    }
+
+    /**
+     * Get the relation name for given child model
+     *
+     * @return null|\Whitecube\Winbooks\Query\Relation
+     */
+    public function getRelationFor(ObjectModel $model): ?Relation
+    {
+        $methods = (new ReflectionClass($this))->getMethods(ReflectionMethod::IS_PUBLIC);
+
+        foreach ($methods as $method) {
+            $method = $method->name;
+
+            if(! Relation::isRelationMethod($method)) continue;
+
+            $relation = $this->$method();
+
+            if(! $relation->isTargeting($model)) continue;
+
+            return $relation;
+        }
+
+        return null;
     }
 
     /**
