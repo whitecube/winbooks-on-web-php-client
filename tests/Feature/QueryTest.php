@@ -166,3 +166,40 @@ it('can add a descending order by clause', function() {
         ]
     ]);
 });
+
+it('can add multiple ordering clauses', function() {
+    $query = new Query(new Customer());
+
+    $query->orderBy('foo')->orderBy('bar', 'desc');
+
+    $query = json_decode(json_encode($query), true);
+
+    expect($query)->toMatchArray([
+        'Orders' => [
+            [
+                'PropertyName' => 'Foo',
+                'Alias' => null,
+                'Projections' => null,
+                'Ascending' => true,
+            ],
+            [
+                'PropertyName' => 'Bar',
+                'Alias' => null,
+                'Projections' => null,
+                'Ascending' => false,
+            ],
+        ]
+    ]);
+});
+
+it('can remove ordering clauses', function() {
+    $query = new Query(new Customer());
+
+    $query->orderBy('foo')->orderBy('bar', 'desc');
+
+    $query->orderBy();
+
+    $query = json_decode(json_encode($query), true);
+
+    expect($query)->not->toHaveKey('Orders');
+});
