@@ -107,22 +107,27 @@ class Query implements JsonSerializable
         if(count($definition) === 2) {
             $property = static::property($definition[0]);
             $value = $definition[1];
-            $operator = Operator::eq(); // TODO : cast operator to PROPERTY when needed & possible
+            $operator = Operator::eq();
         } else {
             $property = static::property($definition[0]);
             $value = $definition[2];
-            $operator = static::operator($definition[1]); // TODO : cast operator to PROPERTY when needed & possible
+            $operator = static::operator($definition[1]);
         }
 
-        if(! is_array($value)) {
-            $value = [$value];
+        if(is_a($value, Property::class)) {
+            $otherProperty = $value;
+            $value = [];
+            // TODO : cast operator to PROPERTY when needed & possible
+        } else {
+            $otherProperty = '';
+            $value = is_array($value) ? $value : [$value];
         }
 
         $this->conditions[] = [
             'Operator' => $operator,
             'PropertyName' => $property,
-            'OtherPropertyName' => '', // TODO : fill with $value when it is a property
-            'Values' => $value, // TODO : leave empty when $value is a property
+            'OtherPropertyName' => $otherProperty,
+            'Values' => $value,
         ];
 
         return $this;

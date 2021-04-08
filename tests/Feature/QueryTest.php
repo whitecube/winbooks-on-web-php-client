@@ -109,3 +109,23 @@ it('can add where condition using 3 parameters', function() {
 it('throws an exception when providing too few parameters to where condition', function() {
     (new Query(new Customer()))->where('foo');
 })->throws(\InvalidArgumentException::class);
+
+it('can add a "property comparison" where condition when providing a property as value', function() {
+    $query = new Query(new Customer());
+
+    $query->where('foo','>',Query::property('bar'));
+
+    $query = json_decode(json_encode($query), true);
+
+    // TODO : change Operator::TYPE_GT into Operator::TYPE_GTPROPERTY
+    expect($query)->toMatchArray([
+        'Conditions' => [
+            [
+                'Operator' => Operator::TYPE_GT,
+                'PropertyName' => 'Foo',
+                'OtherPropertyName' => 'Bar',
+                'Values' => []
+            ],
+        ]
+    ]);
+})->only();
