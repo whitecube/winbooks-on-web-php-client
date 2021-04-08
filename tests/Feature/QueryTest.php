@@ -48,3 +48,49 @@ it('can construct with object model and optional alias', function() {
         'Alias' => 'this'
     ]);
 });
+
+it('can add properties to the query\'s projectionsList', function() {
+    $query = new Query(new Customer());
+
+    expect($query->select('foo'))->toBeInstanceOf(Query::class);
+
+    $query->select('test','baz');
+
+    $query = json_decode(json_encode($query), true);
+
+    expect($query)->toMatchArray([
+        'ProjectionsList' => [
+            ['PropertyName' => 'foo', 'Operator' => Query::OPERATOR_SELECT],
+            ['PropertyName' => 'test', 'Operator' => Query::OPERATOR_SELECT],
+            ['PropertyName' => 'baz', 'Operator' => Query::OPERATOR_SELECT],
+        ]
+    ]);
+});
+
+it('can add properties to the query\'s projectionsList using custom operator', function() {
+    $query = new Query(new Customer());
+
+    expect($query->selectOperator('AVG','foo','bar'))->toBeInstanceOf(Query::class);
+
+    $query->select('test');
+
+    $query = json_decode(json_encode($query), true);
+
+    expect($query)->toMatchArray([
+        'ProjectionsList' => [
+            ['PropertyName' => 'foo', 'Operator' => Query::OPERATOR_AVG],
+            ['PropertyName' => 'bar', 'Operator' => Query::OPERATOR_AVG],
+            ['PropertyName' => 'test', 'Operator' => Query::OPERATOR_SELECT],
+        ]
+    ]);
+});
+
+it('can empty projectionsList', function() {
+    $query = (new Query(new Customer()))->select('foo','bar');
+
+    expect($query->select(null))->toBeInstanceOf(Query::class);
+
+    $query = json_decode(json_encode($query), true);
+
+    expect($query)->not->toHaveKey('ProjectionsList');
+})->only();

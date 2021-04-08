@@ -94,6 +94,13 @@ class Query implements JsonSerializable
     protected $alias;
 
     /**
+     * The query projections (selects)
+     *
+     * @var array
+     */
+    protected $projections = [];
+
+    /**
      * Create a new query instance
      *
      * @param \Whitecube\Winbooks\ObjectModel $model
@@ -104,6 +111,48 @@ class Query implements JsonSerializable
     {
         $this->model = $model;
         $this->alias = $alias;
+    }
+
+    /**
+     * Add one or more projections with the default SELECT operator
+     *
+     * @param array $properties
+     * @return $this
+     */
+    public function select(...$properties)
+    {
+        return $this->selectOperator(static::OPERATOR_SELECT, $properties);
+    }
+
+    /**
+     * Add one or more projections with a custom operator
+     *
+     * @param int|string $operator
+     * @param array $properties
+     * @return $this
+     */
+    public function selectOperator($operator, ...$properties)
+    {
+        $properties = $this->flatten($properties);
+
+        if(count($properties) === 1 && is_null($properties[0])) {
+            $this->projections = [];
+
+            return $this;
+        }
+
+        $operator = static::operator($operator);
+
+        $properties = array_map(function($property) use ($operator) {
+            return [
+                'PropertyName' => $property,
+                'Operator' => $operator
+            ];
+        }, $properties);
+
+        $this->projections = array_merge($this->projections, $properties);
+
+        return $this;
     }
 
     /**
@@ -155,15 +204,41 @@ class Query implements JsonSerializable
     }
 
     /**
+     * Recursively flatten a multidimensional array and remove keys
+     *
+     * @param array $data
+     * @param array $results
+     * @return array
+     */
+    protected function flatten(array $data, array $result = [])
+    {
+        foreach ($data as $flat) {
+            if (is_array($flat)) {
+                $result = $this->flatten($flat, $result);
+            } else {
+                $result[] = $flat;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
      * Serialize the query as request body
      *
      * @return array
      */
     public function jsonSerialize(): array
     {
-        return [
+        $query = [
             'EntityType' => $this->model->getType(),
             'Alias' => $this->alias,
         ];
+
+        if($this->projections) {
+            $query['ProjectionsList'] = $this->projections;
+        }
+
+        return $query;
     }
 }
