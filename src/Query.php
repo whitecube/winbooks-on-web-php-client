@@ -2,9 +2,11 @@
 
 namespace Whitecube\Winbooks;
 
+use JsonSerializable;
+use Whitecube\Winbooks\ObjectModel;
 use Whitecube\Winbooks\Exceptions\UndefinedOperatorException;
 
-class Query
+class Query implements JsonSerializable
 {
     /**
      * The available ExecuteCriteria operators
@@ -78,6 +80,33 @@ class Query
     const OPERATOR_DENSERANK = 64;
 
     /**
+     * The entity model instance for this query
+     *
+     * @var \Whitecube\Winbooks\ObjectModel
+     */
+    protected $model;
+
+    /**
+     * The entity's query Alias
+     *
+     * @var string
+     */
+    protected $alias;
+
+    /**
+     * Create a new query instance
+     *
+     * @param \Whitecube\Winbooks\ObjectModel $model
+     * @param string $alias
+     * @return void
+     */
+    public function __construct(ObjectModel $model, $alias = 'this')
+    {
+        $this->model = $model;
+        $this->alias = $alias;
+    }
+
+    /**
      * Transform the given value into the operator code
      *
      * @param string $value
@@ -122,6 +151,19 @@ class Query
             static::OPERATOR_GT => ['>'],
             static::OPERATOR_LE => ['<='],
             static::OPERATOR_LT => ['<'],
+        ];
+    }
+
+    /**
+     * Serialize the query as request body
+     *
+     * @return array
+     */
+    public function jsonSerialize(): array
+    {
+        return [
+            'EntityType' => $this->model->getType(),
+            'Alias' => $this->alias,
         ];
     }
 }

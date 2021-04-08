@@ -1,6 +1,7 @@
 <?php
 
 use Whitecube\Winbooks\Query;
+use Whitecube\Winbooks\Models\Customer;
 use Whitecube\Winbooks\Exceptions\UndefinedOperatorException;
 
 it('can recognize operator codes when parsing winbooks operators', function() {
@@ -29,3 +30,21 @@ it('throws an exception when converting a non-string operator', function() {
 it('throws an exception when unable to convert string operator', function() {
     Query::operator('something undefined');
 })->throws(UndefinedOperatorException::class);
+
+it('can construct with object model and optional alias', function() {
+    $withAlias = new Query(new Customer(), 'foo');
+    $withoutAlias = new Query(new Customer());
+
+    $withAlias = json_decode(json_encode($withAlias), true);
+    $withoutAlias = json_decode(json_encode($withoutAlias), true);
+
+    expect($withAlias)->toMatchArray([
+        'EntityType' => 'Winbooks.TORM.OM.Customer, Winbooks.TORM.OM',
+        'Alias' => 'foo'
+    ]);
+
+    expect($withoutAlias)->toMatchArray([
+        'EntityType' => 'Winbooks.TORM.OM.Customer, Winbooks.TORM.OM',
+        'Alias' => 'this'
+    ]);
+});
