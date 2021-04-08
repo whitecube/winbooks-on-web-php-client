@@ -5,6 +5,7 @@ namespace Whitecube\Winbooks;
 use JsonSerializable;
 use Whitecube\Winbooks\ObjectModel;
 use Whitecube\Winbooks\Query\Operator;
+use Whitecube\Winbooks\Query\Property;
 
 class Query implements JsonSerializable
 {
@@ -81,7 +82,7 @@ class Query implements JsonSerializable
 
         $properties = array_map(function($property) use ($operator) {
             return [
-                'PropertyName' => $property,
+                'PropertyName' => static::property($property),
                 'Operator' => $operator
             ];
         }, $properties);
@@ -104,11 +105,11 @@ class Query implements JsonSerializable
         }
 
         if(count($definition) === 2) {
-            $property = $definition[0];
+            $property = static::property($definition[0]);
             $value = $definition[1];
             $operator = Operator::eq(); // TODO : cast operator to PROPERTY when needed & possible
         } else {
-            $property = $definition[0];
+            $property = static::property($definition[0]);
             $value = $definition[2];
             $operator = static::operator($definition[1]); // TODO : cast operator to PROPERTY when needed & possible
         }
@@ -128,11 +129,10 @@ class Query implements JsonSerializable
     }
 
     /**
-     * Transform the given value into the operator code
+     * Create a valid operator instance
      *
      * @param int|string|\Whitecube\Winbooks\Query\Operator $value
      * @return \Whitecube\Winbooks\Query\Operator
-     * @throws \Whitecube\Winbooks\Exceptions\UndefinedOperatorException
      */
     public static function operator($value)
     {
@@ -141,6 +141,21 @@ class Query implements JsonSerializable
         }
 
         return new Operator($value);
+    }
+
+    /**
+     * Create a valid property instance
+     *
+     * @param string|\Whitecube\Winbooks\Query\Property $value
+     * @return \Whitecube\Winbooks\Query\Property
+     */
+    public static function property($value)
+    {
+        if(is_a($value, Property::class)) {
+            return $value;
+        }
+
+        return new Property($value);
     }
 
     /**

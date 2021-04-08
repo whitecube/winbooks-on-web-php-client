@@ -33,9 +33,9 @@ it('can add properties to the query\'s projectionsList', function() {
 
     expect($query)->toMatchArray([
         'ProjectionsList' => [
-            ['PropertyName' => 'foo', 'Operator' => Operator::TYPE_SELECT],
-            ['PropertyName' => 'test', 'Operator' => Operator::TYPE_SELECT],
-            ['PropertyName' => 'baz', 'Operator' => Operator::TYPE_SELECT],
+            ['PropertyName' => 'Foo', 'Operator' => Operator::TYPE_SELECT],
+            ['PropertyName' => 'Test', 'Operator' => Operator::TYPE_SELECT],
+            ['PropertyName' => 'Baz', 'Operator' => Operator::TYPE_SELECT],
         ]
     ]);
 });
@@ -51,9 +51,9 @@ it('can add properties to the query\'s projectionsList using custom operator', f
 
     expect($query)->toMatchArray([
         'ProjectionsList' => [
-            ['PropertyName' => 'foo', 'Operator' => Operator::TYPE_AVG],
-            ['PropertyName' => 'bar', 'Operator' => Operator::TYPE_AVG],
-            ['PropertyName' => 'test', 'Operator' => Operator::TYPE_SELECT],
+            ['PropertyName' => 'Foo', 'Operator' => Operator::TYPE_AVG],
+            ['PropertyName' => 'Bar', 'Operator' => Operator::TYPE_AVG],
+            ['PropertyName' => 'Test', 'Operator' => Operator::TYPE_SELECT],
         ]
     ]);
 });
@@ -79,7 +79,7 @@ it('can add where condition using 2 parameters', function() {
         'Conditions' => [
             [
                 'Operator' => Operator::TYPE_EQ,
-                'PropertyName' => 'foo',
+                'PropertyName' => 'Foo',
                 'OtherPropertyName' => '',
                 'Values' => ['bar']
             ],
@@ -98,7 +98,7 @@ it('can add where condition using 3 parameters', function() {
         'Conditions' => [
             [
                 'Operator' => Operator::TYPE_GT,
-                'PropertyName' => 'foo',
+                'PropertyName' => 'Foo',
                 'OtherPropertyName' => '',
                 'Values' => [10]
             ],

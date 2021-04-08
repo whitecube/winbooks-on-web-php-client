@@ -137,7 +137,7 @@ class Operator implements JsonSerializable
      * Transform the given value into the operator code
      *
      * @param int|string $value
-     * @return void
+     * @return int
      * @throws \Whitecube\Winbooks\Exceptions\UndefinedOperatorException
      */
     public function parse($value)
