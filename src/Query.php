@@ -117,10 +117,11 @@ class Query implements JsonSerializable
         if(is_a($value, Property::class)) {
             $otherProperty = $value;
             $value = [];
-            // TODO : cast operator to PROPERTY when needed & possible
+            $operator->forProperty();
         } else {
             $otherProperty = '';
             $value = is_array($value) ? $value : [$value];
+            $operator->forValues();
         }
 
         $this->conditions[] = [

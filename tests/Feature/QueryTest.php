@@ -117,15 +117,14 @@ it('can add a "property comparison" where condition when providing a property as
 
     $query = json_decode(json_encode($query), true);
 
-    // TODO : change Operator::TYPE_GT into Operator::TYPE_GTPROPERTY
     expect($query)->toMatchArray([
         'Conditions' => [
             [
-                'Operator' => Operator::TYPE_GT,
+                'Operator' => Operator::TYPE_GTPROPERTY,
                 'PropertyName' => 'Foo',
                 'OtherPropertyName' => 'Bar',
                 'Values' => []
             ],
         ]
     ]);
-})->only();
+});

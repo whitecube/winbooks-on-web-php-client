@@ -109,6 +109,44 @@ class Operator implements JsonSerializable
     }
 
     /**
+     * Get the "property comparison" equivalents
+     *
+     * @return array
+     */
+    public static function getPropertyEquivalents()
+    {
+        return [
+            static::TYPE_EQ => static::TYPE_EQPROPERTY,
+            static::TYPE_GE => static::TYPE_GEPROPERTY,
+            static::TYPE_GT => static::TYPE_GTPROPERTY,
+            static::TYPE_LE => static::TYPE_LEPROPERTY,
+            static::TYPE_LT => static::TYPE_LTPROPERTY,
+        ];
+    }
+
+    /**
+     * Get the "property comparison" equivalent for given code
+     *
+     * @param int $code
+     * @return null|int
+     */
+    public static function getPropertyEquivalent($code)
+    {
+        return static::getPropertyEquivalents()[$code] ?? null;
+    }
+
+    /**
+     * Get the "property comparison" equivalent for given code
+     *
+     * @param int $code
+     * @return null|int
+     */
+    public static function getValuesEquivalent($code)
+    {
+        return array_flip(static::getPropertyEquivalents())[$code] ?? null;
+    }
+
+    /**
      * Make a new operator instance from a static operator method call
      *
      * @param string $method
@@ -163,6 +201,34 @@ class Operator implements JsonSerializable
         }
 
         return constant($constant);
+    }
+
+    /**
+     * Switch the operator to its "property comparison" equivalent
+     *
+     * @return $this
+     */
+    public function forProperty()
+    {
+        if($equivalent = static::getPropertyEquivalent($this->code)) {
+            $this->code = $equivalent;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Switch the operator to its "values comparison" equivalent
+     *
+     * @return $this
+     */
+    public function forValues()
+    {
+        if($equivalent = static::getValuesEquivalent($this->code)) {
+            $this->code = $equivalent;
+        }
+
+        return $this;
     }
 
     /**
