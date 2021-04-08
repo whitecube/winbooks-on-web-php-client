@@ -38,6 +38,13 @@ class Query implements JsonSerializable
     protected $conditions = [];
 
     /**
+     * The query ordering clauses (order by)
+     *
+     * @var array
+     */
+    protected $orders = [];
+
+    /**
      * Create a new query instance
      *
      * @param \Whitecube\Winbooks\ObjectModel $model
@@ -135,6 +142,31 @@ class Query implements JsonSerializable
     }
 
     /**
+     * Add a single ordering clause
+     *
+     * @param null|string|\Whitecube\Winbooks\Query\Property $property
+     * @param string $direction
+     * @return $this
+     */
+    public function orderBy($property = null, string $direction = 'asc')
+    {
+        if(is_null($property)) {
+            $this->orders = [];
+
+            return $this;
+        }
+
+        $this->orders[] = [
+            'PropertyName' => static::property($property),
+            'Alias' => null,
+            'Projections' => null,
+            'Ascending' => ! (strtolower($direction) === 'desc'),
+        ];
+
+        return $this;
+    }
+
+    /**
      * Create a valid operator instance
      *
      * @param int|string|\Whitecube\Winbooks\Query\Operator $value
@@ -202,6 +234,10 @@ class Query implements JsonSerializable
 
         if($this->conditions) {
             $query['Conditions'] = $this->conditions;
+        }
+
+        if($this->orders) {
+            $query['Orders'] = $this->orders;
         }
 
         return $query;

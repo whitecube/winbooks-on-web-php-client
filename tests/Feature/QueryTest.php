@@ -128,3 +128,41 @@ it('can add a "property comparison" where condition when providing a property as
         ]
     ]);
 });
+
+it('can add a default ascending order by clause', function() {
+    $query = new Query(new Customer());
+
+    expect($query->orderBy('foo'))->toBeInstanceOf(Query::class);
+
+    $query = json_decode(json_encode($query), true);
+
+    expect($query)->toMatchArray([
+        'Orders' => [
+            [
+                'PropertyName' => 'Foo',
+                'Alias' => null,
+                'Projections' => null,
+                'Ascending' => true,
+            ],
+        ]
+    ]);
+});
+
+it('can add a descending order by clause', function() {
+    $query = new Query(new Customer());
+
+    expect($query->orderBy('foo', 'desc'))->toBeInstanceOf(Query::class);
+
+    $query = json_decode(json_encode($query), true);
+
+    expect($query)->toMatchArray([
+        'Orders' => [
+            [
+                'PropertyName' => 'Foo',
+                'Alias' => null,
+                'Projections' => null,
+                'Ascending' => false,
+            ],
+        ]
+    ]);
+});
