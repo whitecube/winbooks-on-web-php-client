@@ -93,4 +93,46 @@ it('can empty projectionsList', function() {
     $query = json_decode(json_encode($query), true);
 
     expect($query)->not->toHaveKey('ProjectionsList');
-})->only();
+});
+
+it('can add where condition using 2 parameters', function() {
+    $query = new Query(new Customer());
+
+    expect($query->where('foo','bar'))->toBeInstanceOf(Query::class);
+
+    $query = json_decode(json_encode($query), true);
+
+    expect($query)->toMatchArray([
+        'Conditions' => [
+            [
+                'Operator' => Query::OPERATOR_EQ,
+                'PropertyName' => 'foo',
+                'OtherPropertyName' => '',
+                'Values' => ['bar']
+            ],
+        ]
+    ]);
+});
+
+it('can add where condition using 3 parameters', function() {
+    $query = new Query(new Customer());
+
+    expect($query->where('foo','>',10))->toBeInstanceOf(Query::class);
+
+    $query = json_decode(json_encode($query), true);
+
+    expect($query)->toMatchArray([
+        'Conditions' => [
+            [
+                'Operator' => Query::OPERATOR_GT,
+                'PropertyName' => 'foo',
+                'OtherPropertyName' => '',
+                'Values' => [10]
+            ],
+        ]
+    ]);
+});
+
+it('throws an exception when providing too few parameters to where condition', function() {
+    (new Query(new Customer()))->where('foo');
+})->throws(\InvalidArgumentException::class);

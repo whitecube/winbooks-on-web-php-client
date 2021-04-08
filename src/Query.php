@@ -101,6 +101,13 @@ class Query implements JsonSerializable
     protected $projections = [];
 
     /**
+     * The query conditions (wheres)
+     *
+     * @var array
+     */
+    protected $conditions = [];
+
+    /**
      * Create a new query instance
      *
      * @param \Whitecube\Winbooks\ObjectModel $model
@@ -151,6 +158,42 @@ class Query implements JsonSerializable
         }, $properties);
 
         $this->projections = array_merge($this->projections, $properties);
+
+        return $this;
+    }
+
+    /**
+     * Add a single condition
+     *
+     * @param array $definition
+     * @return $this
+     */
+    public function where(...$definition)
+    {
+        if(count($definition) < 2) {
+            throw new \InvalidArgumentException('Too few arguments provided to "where" condition. At least 2 expected, ' . count($definition) . ' given.');
+        }
+
+        if(count($definition) === 2) {
+            $property = $definition[0];
+            $value = $definition[1];
+            $operator = static::OPERATOR_EQ; // TODO : cast operator to PROPERTY when needed & possible
+        } else {
+            $property = $definition[0];
+            $value = $definition[2];
+            $operator = $definition[1]; // TODO : cast operator to PROPERTY when needed & possible
+        }
+
+        if(! is_array($value)) {
+            $value = [$value];
+        }
+
+        $this->conditions[] = [
+            'Operator' => static::operator($operator),
+            'PropertyName' => $property,
+            'OtherPropertyName' => '', // TODO : fill with $value when it is a property
+            'Values' => $value, // TODO : leave empty when $value is a property
+        ];
 
         return $this;
     }
@@ -237,6 +280,10 @@ class Query implements JsonSerializable
 
         if($this->projections) {
             $query['ProjectionsList'] = $this->projections;
+        }
+
+        if($this->conditions) {
+            $query['Conditions'] = $this->conditions;
         }
 
         return $query;
