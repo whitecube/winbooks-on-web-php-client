@@ -84,8 +84,16 @@ class Query
      * @return int
      * @throws \Whitecube\Winbooks\Exceptions\UndefinedOperatorException
      */
-    public static function operator(string $value)
+    public static function operator($value)
     {
+        if(is_numeric($value)) {
+            return intval($value);
+        }
+
+        if(! is_string($value)) {
+            throw new UndefinedOperatorException('Operator cannot be of type "' . gettype($value) . '".');
+        }
+
         $symbol = strtoupper(trim($value));
 
         foreach (static::getOperatorSymbols() as $operator => $symbols) {
