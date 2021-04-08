@@ -1,35 +1,8 @@
 <?php
 
 use Whitecube\Winbooks\Query;
+use Whitecube\Winbooks\Query\Operator;
 use Whitecube\Winbooks\Models\Customer;
-use Whitecube\Winbooks\Exceptions\UndefinedOperatorException;
-
-it('can recognize operator codes when parsing winbooks operators', function() {
-    expect(Query::operator('0'))->toBe(Query::OPERATOR_EQ);
-    expect(Query::operator(Query::OPERATOR_EQ))->toBe(Query::OPERATOR_EQ);
-});
-
-it('can transform symbolic operators into winbooks operators', function() {
-    expect(Query::operator('='))->toBe(Query::OPERATOR_EQ);
-    expect(Query::operator('=='))->toBe(Query::OPERATOR_EQ);
-    expect(Query::operator('>='))->toBe(Query::OPERATOR_GE);
-    expect(Query::operator('>'))->toBe(Query::OPERATOR_GT);
-    expect(Query::operator('<='))->toBe(Query::OPERATOR_LE);
-    expect(Query::operator('<'))->toBe(Query::OPERATOR_LT);
-});
-
-it('can transform constant names into winbooks operators', function() {
-    expect(Query::operator('LIKE'))->toBe(Query::OPERATOR_LIKE);
-    expect(Query::operator('is not null'))->toBe(Query::OPERATOR_ISNOTNULL);
-});
-
-it('throws an exception when converting a non-string operator', function() {
-    Query::operator(null);
-})->throws(UndefinedOperatorException::class);
-
-it('throws an exception when unable to convert string operator', function() {
-    Query::operator('something undefined');
-})->throws(UndefinedOperatorException::class);
 
 it('can construct with object model and optional alias', function() {
     $withAlias = new Query(new Customer(), 'foo');
@@ -60,9 +33,9 @@ it('can add properties to the query\'s projectionsList', function() {
 
     expect($query)->toMatchArray([
         'ProjectionsList' => [
-            ['PropertyName' => 'foo', 'Operator' => Query::OPERATOR_SELECT],
-            ['PropertyName' => 'test', 'Operator' => Query::OPERATOR_SELECT],
-            ['PropertyName' => 'baz', 'Operator' => Query::OPERATOR_SELECT],
+            ['PropertyName' => 'foo', 'Operator' => Operator::TYPE_SELECT],
+            ['PropertyName' => 'test', 'Operator' => Operator::TYPE_SELECT],
+            ['PropertyName' => 'baz', 'Operator' => Operator::TYPE_SELECT],
         ]
     ]);
 });
@@ -78,9 +51,9 @@ it('can add properties to the query\'s projectionsList using custom operator', f
 
     expect($query)->toMatchArray([
         'ProjectionsList' => [
-            ['PropertyName' => 'foo', 'Operator' => Query::OPERATOR_AVG],
-            ['PropertyName' => 'bar', 'Operator' => Query::OPERATOR_AVG],
-            ['PropertyName' => 'test', 'Operator' => Query::OPERATOR_SELECT],
+            ['PropertyName' => 'foo', 'Operator' => Operator::TYPE_AVG],
+            ['PropertyName' => 'bar', 'Operator' => Operator::TYPE_AVG],
+            ['PropertyName' => 'test', 'Operator' => Operator::TYPE_SELECT],
         ]
     ]);
 });
@@ -105,7 +78,7 @@ it('can add where condition using 2 parameters', function() {
     expect($query)->toMatchArray([
         'Conditions' => [
             [
-                'Operator' => Query::OPERATOR_EQ,
+                'Operator' => Operator::TYPE_EQ,
                 'PropertyName' => 'foo',
                 'OtherPropertyName' => '',
                 'Values' => ['bar']
@@ -124,7 +97,7 @@ it('can add where condition using 3 parameters', function() {
     expect($query)->toMatchArray([
         'Conditions' => [
             [
-                'Operator' => Query::OPERATOR_GT,
+                'Operator' => Operator::TYPE_GT,
                 'PropertyName' => 'foo',
                 'OtherPropertyName' => '',
                 'Values' => [10]
