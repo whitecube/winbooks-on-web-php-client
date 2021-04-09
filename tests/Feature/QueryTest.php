@@ -337,7 +337,7 @@ it('can take a certain amount of results', function(){
     expect($query->take(50))->toBeInstanceOf(Query::class);
     $serialized = json_decode(json_encode($query), true);
 
-    expect($serialized)->not->toHaveKey('FirstResult');
+    expect($serialized)->toHaveKey('FirstResult', 0);
     expect($serialized)->toHaveKey('MaxResult', 50);
 });
 

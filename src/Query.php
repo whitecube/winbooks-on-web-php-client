@@ -276,6 +276,16 @@ class Query implements JsonSerializable
      */
     public function take(int $amount = null)
     {
+        // In Winbook's current API, "MaxResult" only works when
+        // "FirstResult" is defined, that's why we'll set it to "0"
+        // if it has not been set yet.
+
+        if(is_null($this->cursor) && ! is_null($amount)) {
+            $this->cursor = 0;
+        } else if (is_null($amount) && $this->cursor === 0) {
+            $this->cursor = null;
+        }
+
         $this->amount = $amount;
 
         return $this;

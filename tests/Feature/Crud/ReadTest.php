@@ -77,7 +77,7 @@ it('can query customers using complex criteria defined in a Query instance', fun
     expect($data)->toBeInstanceOf(Collection::class);
     expect($data->count())->toBe(10);
     expect($data->first())->toBeInstanceOf(Customer::class);
-})->only();
+});
 
 it('can query customers using complex criteria defined in a Query array', function() {
     test_folder();
@@ -91,7 +91,7 @@ it('can query customers using complex criteria defined in a Query array', functi
     expect($data)->toBeInstanceOf(Collection::class);
     expect($data->count())->toBe(10);
     expect($data->first())->toBeInstanceOf(Customer::class);
-})->only();
+});
 
 it('can query customers using complex criteria defined in a callback', function() {
     test_folder();
@@ -103,4 +103,4 @@ it('can query customers using complex criteria defined in a callback', function(
     expect($data)->toBeInstanceOf(Collection::class);
     expect($data->count())->toBe(10);
     expect($data->first())->toBeInstanceOf(Customer::class);
-})->only();
+});
