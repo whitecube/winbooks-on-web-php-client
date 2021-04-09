@@ -317,7 +317,7 @@ it('can add pagination configurations', function(){
 
     expect($serialized)->toHaveKey('FirstResult', 40);
     expect($serialized)->toHaveKey('MaxResult', 20);
-})->only();
+});
 
 it('can reset pagination configurations', function(){
     $query = new Query(new Customer);
@@ -329,7 +329,7 @@ it('can reset pagination configurations', function(){
 
     expect($serialized)->not->toHaveKey('FirstResult');
     expect($serialized)->not->toHaveKey('MaxResult');
-})->only();
+});
 
 it('can take a certain amount of results', function(){
     $query = new Query(new Customer);
@@ -339,7 +339,7 @@ it('can take a certain amount of results', function(){
 
     expect($serialized)->not->toHaveKey('FirstResult');
     expect($serialized)->toHaveKey('MaxResult', 50);
-})->only();
+});
 
 it('can remove the amount of results limitation', function(){
     $query = new Query(new Customer);
@@ -351,7 +351,7 @@ it('can remove the amount of results limitation', function(){
     
     expect($serialized)->not->toHaveKey('FirstResult');
     expect($serialized)->not->toHaveKey('MaxResult');
-})->only();
+});
 
 it('can skip a certain amount of results', function(){
     $query = new Query(new Customer);
@@ -361,7 +361,7 @@ it('can skip a certain amount of results', function(){
 
     expect($serialized)->toHaveKey('FirstResult', 50);
     expect($serialized)->not->toHaveKey('MaxResult');
-})->only();
+});
 
 it('can remove the results skipping', function(){
     $query = new Query(new Customer);
@@ -373,4 +373,4 @@ it('can remove the results skipping', function(){
     
     expect($serialized)->not->toHaveKey('FirstResult');
     expect($serialized)->not->toHaveKey('MaxResult');
-})->only();
+});

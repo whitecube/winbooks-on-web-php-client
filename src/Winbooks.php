@@ -503,26 +503,24 @@ class Winbooks
      * Execute criteria for an object model namespace
      *
      * @param string $oms
-     * @param array $query
+     * @param mixed $query
      * @return mixed
-     * @throws InvalidTokensException
-     * @throws UnauthenticatedException
-     * @throws UndefinedFolderException
+     * @throws UndefinedObjectModelException
+     * @throws InvalidArgumentException
      */
-    public function query(string $oms, array $query = [])
+    public function query(string $oms, $query)
     {
-        $model = static::findModelType('oms', $oms);
+        $model = Query::model($oms);
 
-        if(is_null($model)) {
-            throw new UndefinedObjectModelException('Undefined object model for oms "' . $oms . '".');
+        if(is_callable($query)) {
+            $callback = $query;
+            $query = new Query($model);
+            $callback($query);
         }
 
-        $defaults = [
-            'EntityType' => $model['type'],
-            'Alias' => 'this',
-        ];
-
-        $query = array_merge($defaults, $query);
+        if(! is_a($query, Query::class) && ! is_array($query)) {
+            throw new \InvalidArgumentException('Cannot use provided "' . is_object($query) ? get_class($query) : gettype($query) . '" as query, should be callable, array or ' . Query::class);            
+        }
 
         return $this->request(function($options = []) use ($oms, $query) {
             return $this->guzzle->post("app/$oms/Folder/$this->folder/ExecuteCriteria", array_merge($options, [

@@ -1,5 +1,6 @@
 <?php
 
+use Whitecube\Winbooks\Query;
 use Whitecube\Winbooks\Winbooks;
 use Whitecube\Winbooks\Collection;
 use Whitecube\Winbooks\Models\Third;
@@ -65,3 +66,41 @@ it('can get nested data merged from aggregated level 3 requests', function() {
     // contains all its promised data.
     expect(count($customer->Vat->GLTransactions))->toBeGreaterThan(101);
 });
+
+it('can query customers using complex criteria defined in a Query instance', function() {
+    test_folder();
+
+    $query = (new Query(new Customer))->take(10);
+
+    $data = $this->winbooks->query('Customers', $query);
+
+    expect($data)->toBeInstanceOf(Collection::class);
+    expect($data->count())->toBe(10);
+    expect($data->first())->toBeInstanceOf(Customer::class);
+})->only();
+
+it('can query customers using complex criteria defined in a Query array', function() {
+    test_folder();
+
+    $query = (new Query(new Customer))->take(10)->jsonSerialize();
+
+    expect($query)->toBeArray();
+
+    $data = $this->winbooks->query('Customers', $query);
+
+    expect($data)->toBeInstanceOf(Collection::class);
+    expect($data->count())->toBe(10);
+    expect($data->first())->toBeInstanceOf(Customer::class);
+})->only();
+
+it('can query customers using complex criteria defined in a callback', function() {
+    test_folder();
+
+    $data = $this->winbooks->query('Customers', function($query) {
+        $query->take(10);
+    });
+
+    expect($data)->toBeInstanceOf(Collection::class);
+    expect($data->count())->toBe(10);
+    expect($data->first())->toBeInstanceOf(Customer::class);
+})->only();
