@@ -54,6 +54,20 @@ class Query implements JsonSerializable
     protected $orders = [];
 
     /**
+     * The amount of results per page
+     *
+     * @var null|int
+     */
+    protected $amount = null;
+
+    /**
+     * The amount of first skipped results
+     *
+     * @var null|int
+     */
+    protected $cursor = null;
+
+    /**
      * Create a new query instance
      *
      * @param \Whitecube\Winbooks\ObjectModel $model
@@ -236,6 +250,51 @@ class Query implements JsonSerializable
     }
 
     /**
+     * Configure the results pagination
+     *
+     * @param null|int $perPage
+     * @param null|int $page
+     * @return $this
+     */
+    public function paginate(int $perPage = null, int $page = null)
+    {
+        if(is_null($perPage)) {
+            $this->amount = null;
+            $this->cursor = null;
+
+            return $this;
+        }
+
+        return $this->take($perPage)->skip((($page ?? 1) - 1) * $perPage);
+    }
+
+    /**
+     * Set the max. results count
+     *
+     * @param null|int $amount
+     * @return $this
+     */
+    public function take(int $amount = null)
+    {
+        $this->amount = $amount;
+
+        return $this;
+    }
+
+    /**
+     * Set the index of the first result (first = 0)
+     *
+     * @param null|int $amount
+     * @return $this
+     */
+    public function skip(int $amount = null)
+    {
+        $this->cursor = $amount;
+
+        return $this;
+    }
+
+    /**
      * Create a valid operator instance
      *
      * @param int|string|\Whitecube\Winbooks\Query\Operator $value
@@ -338,6 +397,14 @@ class Query implements JsonSerializable
 
         if($this->orders) {
             $query['Orders'] = $this->orders;
+        }
+
+        if(! is_null($this->cursor)) {
+            $query['FirstResult'] = $this->cursor;
+        }
+
+        if(! is_null($this->amount)) {
+            $query['MaxResult'] = $this->amount;
         }
 
         return $query;

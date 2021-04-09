@@ -302,3 +302,75 @@ it('can add an association using Query::with method and use its existing relatio
     expect($join)->toHaveKey('LeftProperty');
     expect($join)->toHaveKey('RightProperty');
 });
+
+it('can add pagination configurations', function(){
+    $query = new Query(new Customer);
+
+    expect($query->paginate(50))->toBeInstanceOf(Query::class);
+    $serialized = json_decode(json_encode($query), true);
+
+    expect($serialized)->toHaveKey('FirstResult', 0);
+    expect($serialized)->toHaveKey('MaxResult', 50);
+
+    expect($query->paginate(20, 3))->toBeInstanceOf(Query::class);
+    $serialized = json_decode(json_encode($query), true);
+
+    expect($serialized)->toHaveKey('FirstResult', 40);
+    expect($serialized)->toHaveKey('MaxResult', 20);
+})->only();
+
+it('can reset pagination configurations', function(){
+    $query = new Query(new Customer);
+
+    $query->paginate(10, 6);
+
+    expect($query->paginate(null))->toBeInstanceOf(Query::class);
+    $serialized = json_decode(json_encode($query), true);
+
+    expect($serialized)->not->toHaveKey('FirstResult');
+    expect($serialized)->not->toHaveKey('MaxResult');
+})->only();
+
+it('can take a certain amount of results', function(){
+    $query = new Query(new Customer);
+
+    expect($query->take(50))->toBeInstanceOf(Query::class);
+    $serialized = json_decode(json_encode($query), true);
+
+    expect($serialized)->not->toHaveKey('FirstResult');
+    expect($serialized)->toHaveKey('MaxResult', 50);
+})->only();
+
+it('can remove the amount of results limitation', function(){
+    $query = new Query(new Customer);
+
+    $query->take(50);
+
+    expect($query->take(null))->toBeInstanceOf(Query::class);
+    $serialized = json_decode(json_encode($query), true);
+    
+    expect($serialized)->not->toHaveKey('FirstResult');
+    expect($serialized)->not->toHaveKey('MaxResult');
+})->only();
+
+it('can skip a certain amount of results', function(){
+    $query = new Query(new Customer);
+
+    expect($query->skip(50))->toBeInstanceOf(Query::class);
+    $serialized = json_decode(json_encode($query), true);
+
+    expect($serialized)->toHaveKey('FirstResult', 50);
+    expect($serialized)->not->toHaveKey('MaxResult');
+})->only();
+
+it('can remove the results skipping', function(){
+    $query = new Query(new Customer);
+
+    $query->skip(50);
+
+    expect($query->skip(null))->toBeInstanceOf(Query::class);
+    $serialized = json_decode(json_encode($query), true);
+    
+    expect($serialized)->not->toHaveKey('FirstResult');
+    expect($serialized)->not->toHaveKey('MaxResult');
+})->only();
