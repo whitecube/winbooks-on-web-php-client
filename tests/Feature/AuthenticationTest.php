@@ -52,5 +52,5 @@ it('throws exception if all tokens are invalid', function() {
 it('still throws underlying API exceptions', function() {
     authenticate();
 
-    $this->winbooks->folder('PARFIWEB_DEMO')->all('Customerz');
+    $this->winbooks->folder('FOO_FOLDER')->all('Customers');
 })->throws(\GuzzleHttp\Exception\ClientException::class);

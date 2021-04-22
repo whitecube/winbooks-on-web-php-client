@@ -1,6 +1,7 @@
 <?php
 
 use Whitecube\Winbooks\Winbooks;
+use Whitecube\Winbooks\Models\Customer;
 use function Tests\test_folder;
 use function Tests\cleanup;
 
@@ -13,7 +14,7 @@ it('can update an existing customer', function() {
     test_folder();
 
     // Given we have an existing customer
-    $alice = $this->winbooks->add('Customer', 'ALICE', [
+    $alice = $this->winbooks->add(Customer::class, 'ALICE', [
         'MemoType' => '1',
         'Memo' => 'This is a memo for Alice Wilder',
         'Third' => [
@@ -24,15 +25,15 @@ it('can update an existing customer', function() {
     ]);
 
     // We should be abe to update their data
-    $this->winbooks->update('Customer', 'ALICE', [
+    $this->winbooks->update(Customer::class, 'ALICE', [
         'Memo' => 'This is an updated memo for Alice Wilder',
     ]);
 
-    $alice = $this->winbooks->get('Customer', 'ALICE');
+    $alice = $this->winbooks->get(Customer::class, 'ALICE');
 
     expect($alice->Memo)->toBe('This is an updated memo for Alice Wilder');
 
-    cleanup('Customer', 'ALICE');
+    cleanup(Customer::class, 'ALICE');
 });
 
 
@@ -58,16 +59,16 @@ it('can update a list of customers', function() {
         ]
     ];
 
-    $this->winbooks->addMany('Customers', [$alice, $john]);
+    $this->winbooks->addMany(Customer::class, [$alice, $john]);
 
     // We should be able to update their data
     $alice['Third']['Name'] = 'Alice Wilder Updated';
     $john['Third']['Name'] = 'John Doe Updated';
 
-    $this->winbooks->updateMany('Customers', [$alice, $john]);
+    $this->winbooks->updateMany(Customer::class, [$alice, $john]);
 
-    expect($this->winbooks->get('Customer', 'ALICE', 3)->Third->Name)->toBe('Alice Wilder Updated');
-    expect($this->winbooks->get('Customer', 'JOHNDOE', 3)->Third->Name)->toBe('John Doe Updated');
+    expect($this->winbooks->get(Customer::class, 'ALICE', 3)->Third->Name)->toBe('Alice Wilder Updated');
+    expect($this->winbooks->get(Customer::class, 'JOHNDOE', 3)->Third->Name)->toBe('John Doe Updated');
 
-    cleanup('Customer', 'ALICE', 'JOHNDOE');
+    cleanup(Customer::class, 'ALICE', 'JOHNDOE');
 });

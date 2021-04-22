@@ -16,7 +16,7 @@ beforeEach(function() {
 
 it('can get all customers from a specific folder', function() {
     test_folder();
-    $data = $this->winbooks->all('Customers');
+    $data = $this->winbooks->all(Customer::class);
 
     expect($data)->toBeInstanceOf(Collection::class);
     expect($data)->toBeIterable();
@@ -30,7 +30,7 @@ it('can get all customers from a specific folder', function() {
 
 it('can get a customer by code', function() {
     test_folder();
-    $customer = $this->winbooks->get('Customer', 'ARTHUR');
+    $customer = $this->winbooks->get(Customer::class, 'ARTHUR');
 
     expect($customer)->toBeInstanceOf(Customer::class);
     expect($customer->getCode())->toBe('ARTHUR');
@@ -39,7 +39,7 @@ it('can get a customer by code', function() {
 it('cannot get nested data from level 1 requests', function() {
     test_folder();
 
-    $customer = $this->winbooks->get('Customer', 'ARTHUR');
+    $customer = $this->winbooks->get(Customer::class, 'ARTHUR');
 
     expect($customer->Third)->toBeNull();
 });
@@ -47,7 +47,7 @@ it('cannot get nested data from level 1 requests', function() {
 it('can get nested data from level 2 requests', function() {
     test_folder();
 
-    $customer = $this->winbooks->get('Customer', 'ARTHUR', 2);
+    $customer = $this->winbooks->get(Customer::class, 'ARTHUR', 2);
 
     expect($customer->Third)->toBeInstanceOf(Third::class);
 });
@@ -55,7 +55,7 @@ it('can get nested data from level 2 requests', function() {
 it('can get nested data merged from aggregated level 3 requests', function() {
     test_folder();
 
-    $customer = $this->winbooks->get('Customer', 'ARTHUR', 3);
+    $customer = $this->winbooks->get(Customer::class, 'ARTHUR', 3);
 
     expect($customer->Third->Civility)->toBeInstanceOf(ThirdCivility::class);
 
@@ -72,7 +72,7 @@ it('can query customers using complex criteria defined in a Query instance', fun
 
     $query = (new Query(new Customer))->take(10);
 
-    $data = $this->winbooks->query('Customers', $query);
+    $data = $this->winbooks->query(Customer::class, $query);
 
     expect($data)->toBeInstanceOf(Collection::class);
     expect($data->count())->toBe(10);
@@ -86,7 +86,7 @@ it('can query customers using complex criteria defined in a Query array', functi
 
     expect($query)->toBeArray();
 
-    $data = $this->winbooks->query('Customers', $query);
+    $data = $this->winbooks->query(Customer::class, $query);
 
     expect($data)->toBeInstanceOf(Collection::class);
     expect($data->count())->toBe(10);
@@ -96,7 +96,7 @@ it('can query customers using complex criteria defined in a Query array', functi
 it('can query customers using complex criteria defined in a callback', function() {
     test_folder();
 
-    $data = $this->winbooks->query('Customers', function($query) {
+    $data = $this->winbooks->query(Customer::class, function($query) {
         $query->take(10);
     });
 
@@ -108,7 +108,7 @@ it('can query customers using complex criteria defined in a callback', function(
 it('can map projection list properties to their returned values', function() {
     test_folder();
 
-    $data = $this->winbooks->query('Customers', function($query) {
+    $data = $this->winbooks->query(Customer::class, function($query) {
         $query->select('Id', 'Code', 'Modified')->take(1);
     })->first();
 

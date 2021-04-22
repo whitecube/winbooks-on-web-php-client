@@ -486,14 +486,18 @@ class Winbooks
     /**
      * Get all objects from an object model namespace
      *
-     * @param string $oms
+     * @param string $objectModel
      * @return mixed
      * @throws InvalidTokensException
      * @throws UnauthenticatedException
      * @throws UndefinedFolderException
      */
-    public function all(string $oms)
+    public function all(string $objectModel)
     {
+        $model = Query::model($objectModel);
+
+        $oms = $model->getOMS();
+        
         return $this->request(function($options = []) use ($oms) {
             return $this->guzzle->get("app/$oms/Folder/$this->folder", $options);
         }, true);
@@ -502,15 +506,17 @@ class Winbooks
     /**
      * Execute criteria for an object model namespace
      *
-     * @param string $oms
+     * @param string $objectModel
      * @param mixed $query
      * @return mixed
      * @throws UndefinedObjectModelException
      * @throws InvalidArgumentException
      */
-    public function query(string $oms, $query)
+    public function query(string $objectModel, $query)
     {
-        $model = Query::model($oms);
+        $model = Query::model($objectModel);
+
+        $oms = $model->getOMS();
 
         if(is_callable($query)) {
             $callback = $query;
@@ -527,7 +533,7 @@ class Winbooks
                 'json' => $query,
             ]));
         }, true);
-        
+
         $projections = is_a($query, Query::class)
             ? $query->getProjections()
             : [];
@@ -569,7 +575,7 @@ class Winbooks
     /**
      * Get an object from an object model namespace
      *
-     * @param string $om
+     * @param string $objectModel
      * @param string $code
      * @param int $maxLevel
      * @return mixed
@@ -577,8 +583,12 @@ class Winbooks
      * @throws UnauthenticatedException
      * @throws UndefinedFolderException
      */
-    public function get(string $om, string $code, $maxLevel = 1)
+    public function get(string $objectModel, string $code, $maxLevel = 1)
     {
+        $model = Query::model($objectModel);
+
+        $om = $model->getOM();
+
         return $this->request(function($options = []) use ($om, $code, $maxLevel) {
             return $this->guzzle->get("app/$om/$code/Folder/$this->folder?maxLevel=$maxLevel", $options);
         });
@@ -587,7 +597,7 @@ class Winbooks
     /**
      * Add an object
      *
-     * @param string $om
+     * @param string $objectModel
      * @param string $code
      * @param array $data
      * @return \stdClass
@@ -595,8 +605,12 @@ class Winbooks
      * @throws UnauthenticatedException
      * @throws UndefinedFolderException
      */
-    public function add(string $om, string $code, array $data)
+    public function add(string $objectModel, string $code, array $data)
     {
+        $model = Query::model($objectModel);
+
+        $om = $model->getOM();
+
         if(!isset($data['Code'])) {
             $data['Code'] = $code;
         }
@@ -611,15 +625,19 @@ class Winbooks
     /**
      * Add many objects at once
      *
-     * @param string $oms
+     * @param string $objectModel
      * @param array $objects
      * @return \stdClass|void
      * @throws InvalidTokensException
      * @throws UnauthenticatedException
      * @throws UndefinedFolderException
      */
-    public function addMany(string $oms, array $objects)
+    public function addMany(string $objectModel, array $objects)
     {
+        $model = Query::model($objectModel);
+
+        $oms = $model->getOMS();
+
         return $this->request(function($options = []) use ($oms, $objects) {
             return $this->guzzle->post("app/$oms/Folder/$this->folder", array_merge($options, [
                 'json' => $objects
@@ -630,7 +648,7 @@ class Winbooks
     /**
      * Update an object
      *
-     * @param string $om
+     * @param string $objectModel
      * @param string $code
      * @param array $data
      * @return mixed
@@ -638,8 +656,12 @@ class Winbooks
      * @throws UnauthenticatedException
      * @throws UndefinedFolderException
      */
-    public function update(string $om, string $code, array $data)
+    public function update(string $objectModel, string $code, array $data)
     {
+        $model = Query::model($objectModel);
+
+        $om = $model->getOM();
+
         return $this->request(function($options = []) use ($om, $code, $data) {
             return $this->guzzle->put("app/$om/$code/Folder/$this->folder", array_merge($options, [
                 'json' => $data
@@ -650,15 +672,19 @@ class Winbooks
     /**
      * Update multiple objects at once
      *
-     * @param string $oms
+     * @param string $objectModel
      * @param array $objects
      * @return \stdClass|void
      * @throws InvalidTokensException
      * @throws UnauthenticatedException
      * @throws UndefinedFolderException
      */
-    public function updateMany(string $oms, array $objects)
+    public function updateMany(string $objectModel, array $objects)
     {
+        $model = Query::model($objectModel);
+
+        $oms = $model->getOMS();
+
         return $this->request(function($options = []) use ($oms, $objects) {
             return $this->guzzle->put("app/$oms/Folder/$this->folder", array_merge($options, [
                 'json' => $objects
@@ -669,15 +695,19 @@ class Winbooks
     /**
      * Delete an object
      *
-     * @param string $om
+     * @param string $objectModel
      * @param string $code
      * @return \stdClass|void
      * @throws InvalidTokensException
      * @throws UnauthenticatedException
      * @throws UndefinedFolderException
      */
-    public function delete(string $om, string $code)
+    public function delete(string $objectModel, string $code)
     {
+        $model = Query::model($objectModel);
+
+        $om = $model->getOM();
+        
         return $this->request(function($options = []) use ($om, $code) {
             return $this->guzzle->delete("app/$om/$code/Folder/$this->folder", $options);
         });
