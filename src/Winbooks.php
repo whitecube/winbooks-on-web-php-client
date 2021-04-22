@@ -487,19 +487,20 @@ class Winbooks
      * Get all objects from an object model namespace
      *
      * @param string $objectModel
+     * @param int $maxLevel
      * @return mixed
      * @throws InvalidTokensException
      * @throws UnauthenticatedException
      * @throws UndefinedFolderException
      */
-    public function all(string $objectModel)
+    public function all(string $objectModel, $maxLevel = 1)
     {
         $model = Query::model($objectModel);
 
         $oms = $model->getOMS();
         
-        return $this->request(function($options = []) use ($oms) {
-            return $this->guzzle->get("app/$oms/Folder/$this->folder", $options);
+        return $this->request(function($options = []) use ($oms, $maxLevel) {
+            return $this->guzzle->get("app/$oms/Folder/$this->folder?maxLevel=$maxLevel", $options);
         }, true);
     }
 
@@ -508,11 +509,12 @@ class Winbooks
      *
      * @param string $objectModel
      * @param mixed $query
+     * @param int $maxLevel
      * @return mixed
      * @throws UndefinedObjectModelException
      * @throws InvalidArgumentException
      */
-    public function query(string $objectModel, $query)
+    public function query(string $objectModel, $query, $maxLevel = 1)
     {
         $model = Query::model($objectModel);
 
@@ -528,8 +530,8 @@ class Winbooks
             throw new \InvalidArgumentException('Cannot use provided "' . is_object($query) ? get_class($query) : gettype($query) . '" as query, should be callable, array or ' . Query::class);            
         }
 
-        $result = $this->request(function($options = []) use ($oms, $query) {
-            return $this->guzzle->post("app/$oms/Folder/$this->folder/ExecuteCriteria", array_merge($options, [
+        $result = $this->request(function($options = []) use ($oms, $query, $maxLevel) {
+            return $this->guzzle->post("app/$oms/Folder/$this->folder/ExecuteCriteria?maxLevel=$maxLevel", array_merge($options, [
                 'json' => $query,
             ]));
         }, true);

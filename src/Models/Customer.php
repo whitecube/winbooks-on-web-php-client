@@ -17,7 +17,7 @@ class Customer extends ObjectModel
     }
 
     /**
-     * Get the object model's $type string
+     * Get the belongsTo Third relationship
      *
      * @return \Whitecube\Winbooks\Query\Relation
      */

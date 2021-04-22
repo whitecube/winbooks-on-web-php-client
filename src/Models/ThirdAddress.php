@@ -26,4 +26,14 @@ class ThirdAddress extends ObjectModel
     {
         return 'Winbooks.TORM.OM.Third_Address, Winbooks.TORM.OM';
     }
+
+    /**
+     * Get the belongsTo Address relationship
+     *
+     * @return \Whitecube\Winbooks\Query\Relation
+     */
+    public function getAddressRelation()
+    {
+        return $this->relatesTo(Address::class)->using('Id','Address_Id');
+    }
 }

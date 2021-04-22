@@ -25,7 +25,13 @@ it('can get all customers from a specific folder', function() {
     expect($data[0])->toBeInstanceOf(Customer::class);
     expect($data->first())->toBeInstanceOf(Customer::class);
     expect($data->last())->toBeInstanceOf(Customer::class);
+});
 
+it('can get all customers with a specific nesting level', function() {
+    test_folder();
+    $data = $this->winbooks->all(Customer::class, 2);
+
+    expect($data->first()->Third)->toBeInstanceOf(Third::class);
 });
 
 it('can get a customer by code', function() {
@@ -103,6 +109,16 @@ it('can query customers using complex criteria defined in a callback', function(
     expect($data)->toBeInstanceOf(Collection::class);
     expect($data->count())->toBe(10);
     expect($data->first())->toBeInstanceOf(Customer::class);
+});
+
+it('can query customers with a specific nesting level', function() {
+    test_folder();
+
+    $data = $this->winbooks->query(Customer::class, function($query) {
+        $query->take(10);
+    }, 2);
+
+    expect($data->first()->Third)->toBeInstanceOf(Third::class);
 });
 
 it('can map projection list properties to their returned values', function() {
