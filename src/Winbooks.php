@@ -522,11 +522,48 @@ class Winbooks
             throw new \InvalidArgumentException('Cannot use provided "' . is_object($query) ? get_class($query) : gettype($query) . '" as query, should be callable, array or ' . Query::class);            
         }
 
-        return $this->request(function($options = []) use ($oms, $query) {
+        $result = $this->request(function($options = []) use ($oms, $query) {
             return $this->guzzle->post("app/$oms/Folder/$this->folder/ExecuteCriteria", array_merge($options, [
                 'json' => $query,
             ]));
         }, true);
+        
+        $projections = is_a($query, Query::class)
+            ? $query->getProjections()
+            : [];
+
+        if(! $projections) {
+            return $result;
+        }
+
+        if(! is_a($result, Collection::class)) {
+            return $this->mapProjections($result, $projections);
+        }
+
+        foreach ($result as $key => $item) {
+            $result[$key] = $this->mapProjections($item, $projections);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Transform a sequential projection results array into an associative array
+     *
+     * @param mixed $result
+     * @param array $projections
+     * @return mixed
+     */
+    protected function mapProjections($result, array $projections)
+    {
+        if(! is_array($result)) {
+            return $result;
+        }
+
+        return array_combine(
+            array_values($projections), 
+            array_values($result)
+        );
     }
 
     /**

@@ -123,6 +123,18 @@ class Query implements JsonSerializable
     }
 
     /**
+     * Return the defined selects
+     *
+     * @return array
+     */
+    public function getProjections()
+    {
+        return array_map(function($projection) {
+            return $projection['PropertyName']->getName();
+        }, $this->projections);
+    }
+
+    /**
      * Add a single condition
      *
      * @param array $definition

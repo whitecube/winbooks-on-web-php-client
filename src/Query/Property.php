@@ -69,6 +69,16 @@ class Property implements JsonSerializable
     }
 
     /**
+     * Return the defined property name
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    /**
      * Serialize the property for the request body
      *
      * @return string
