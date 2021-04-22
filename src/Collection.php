@@ -55,6 +55,10 @@ class Collection implements ArrayAccess, IteratorAggregate, Countable
 
         $values = array_values($values);
 
+        if(! $values) {
+            return $this;
+        }
+
         // If there is a fragment from previous request, we should
         // first check if it can be completed with the new incoming data.
         if($this->isMissingFragmentPart($values[0])) {

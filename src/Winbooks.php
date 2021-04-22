@@ -406,30 +406,6 @@ class Winbooks
     }
 
     /**
-     * Decode the response if it worked
-     *
-     * @param Response $response
-     * @param bool $asCollection
-     * @return mixed
-     */
-    protected function decode(Response $response, bool $asCollection)
-    {
-        if($response->getStatusCode() !== 200) {
-            return null;
-        }
-
-        $data = json_decode($response->getBody(), true);
-
-        if(! $asCollection) {
-            return static::toModel($data);
-        }
-
-        return array_map(function($item) {
-            return static::toModel($item);
-        }, $data);
-    }
-
-    /**
      * Make a manual request to the API
      *
      * @param callable $attempt
@@ -465,7 +441,7 @@ class Winbooks
             return $result;
         }
 
-        // The REST API has indicated that the result was truncated, we should
+        // The API has indicated that the result was truncated, we should
         // now continue filling the obtained result with the missing data. This
         // is done by sending the original request again including the API's
         // response "ContinuePath" header until everything has been fetched.
@@ -481,6 +457,30 @@ class Winbooks
         };
 
         return $this->request($attempt, $asCollection, $original, $result);
+    }
+
+    /**
+     * Decode the response if it worked
+     *
+     * @param Response $response
+     * @param bool $asCollection
+     * @return mixed
+     */
+    protected function decode(Response $response, bool $asCollection)
+    {
+        if($response->getStatusCode() !== 200) {
+            return null;
+        }
+
+        $data = json_decode($response->getBody(), true);
+
+        if(! $asCollection) {
+            return static::toModel($data);
+        }
+
+        return array_map(function($item) {
+            return static::toModel($item);
+        }, $data ?? []);
     }
 
     /**
