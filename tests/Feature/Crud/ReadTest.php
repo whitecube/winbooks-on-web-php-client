@@ -104,3 +104,15 @@ it('can query customers using complex criteria defined in a callback', function(
     expect($data->count())->toBe(10);
     expect($data->first())->toBeInstanceOf(Customer::class);
 });
+
+it('can map projection list properties to their returned values', function() {
+    test_folder();
+
+    $data = $this->winbooks->query('Customers', function($query) {
+        $query->select('Id', 'Code', 'Modified')->take(1);
+    })->first();
+
+    expect($data)->toHaveKey('Id');
+    expect($data)->toHaveKey('Code');
+    expect($data)->toHaveKey('Modified');
+});
