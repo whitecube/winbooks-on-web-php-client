@@ -48,7 +48,7 @@ All getter methods will return the JSON data directly from WoW, already decoded 
 
 #### Returning all data
 
-To get all results from an object model, use the `all($object_model)` method.
+To get all results from an object model, use the `all($object_model, $max_level = 1)` method.
 
 ```php
 $customers = $winbooks->all('Customers');
@@ -59,7 +59,7 @@ $customers = $winbooks->all('Customers');
 
 #### Returning data for a single object model
 
-To get a single result from an object model, use the `get($object_model, $code)` method.
+To get a single result from an object model, use the `get($object_model, $code, $max_level = 1)` method.
 
 > **Note**: you can substitute $code for the ID if you have it.
 
@@ -79,7 +79,7 @@ $vlad = $winbooks->get('Customer', 'VLADIMIR', 3);
 
 Listing object models is often more complicated than just fetching all results. To get more refined results, it is recommended to use the Query Builder provided in this package. It will make API interactions more precise and it is therefore a great way to enhance performance.
 
-Queries can be send using the `query($object_model, $query_builder)` method.
+Queries can be send using the `query($object_model, $query_builder, $max_level = 1)` method.
 
 ```php
 $results = $winbooks->query('Customers', function($query) {
