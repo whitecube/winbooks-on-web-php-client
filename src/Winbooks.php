@@ -600,14 +600,14 @@ class Winbooks
      * Add an object
      *
      * @param string $objectModel
-     * @param string $code
+     * @param null|string $code
      * @param array $data
      * @return \stdClass
      * @throws InvalidTokensException
      * @throws UnauthenticatedException
      * @throws UndefinedFolderException
      */
-    public function add(string $objectModel, string $code, array $data)
+    public function add(string $objectModel, string $code = null, array $data)
     {
         $model = Query::model($objectModel);
 
@@ -617,8 +617,12 @@ class Winbooks
             $data['Code'] = $code;
         }
 
-        return $this->request(function($options = []) use ($om, $code, $data) {
-            return $this->guzzle->post("app/$om/$code/Folder/$this->folder", array_merge($options, [
+        $url = $model->hasCodeInCreateUrl()
+            ? "app/$om/$code/Folder/$this->folder"
+            : "app/$om/Folder/$this->folder";
+
+        return $this->request(function($options = []) use ($url, $data) {
+            return $this->guzzle->post($url, array_merge($options, [
                 'json' => $data
             ]));
         });
@@ -651,21 +655,25 @@ class Winbooks
      * Update an object
      *
      * @param string $objectModel
-     * @param string $code
+     * @param null|string $code
      * @param array $data
      * @return mixed
      * @throws InvalidTokensException
      * @throws UnauthenticatedException
      * @throws UndefinedFolderException
      */
-    public function update(string $objectModel, string $code, array $data)
+    public function update(string $objectModel, string $code = null, array $data)
     {
         $model = Query::model($objectModel);
 
         $om = $model->getOM();
 
-        return $this->request(function($options = []) use ($om, $code, $data) {
-            return $this->guzzle->put("app/$om/$code/Folder/$this->folder", array_merge($options, [
+        $url = $model->hasCodeInUpdateUrl()
+            ? "app/$om/$code/Folder/$this->folder"
+            : "app/$om/Folder/$this->folder";
+
+        return $this->request(function($options = []) use ($url, $data) {
+            return $this->guzzle->put($url, array_merge($options, [
                 'json' => $data
             ]));
         });

@@ -55,6 +55,28 @@ abstract class ObjectModel implements ArrayAccess, JsonSerializable
     }
 
     /**
+     * Define wether the single add route should include
+     * the model's Code/Id or not...
+     *
+     * @return bool
+     */
+    public function hasCodeInCreateUrl(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Define wether the single update route should include
+     * the model's Code/Id or not...
+     *
+     * @return bool
+     */
+    public function hasCodeInUpdateUrl(): bool
+    {
+        return true;
+    }
+
+    /**
      * Get the object model's singular name
      *
      * @return string
