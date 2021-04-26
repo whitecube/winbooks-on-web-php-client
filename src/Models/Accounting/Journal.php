@@ -12,4 +12,13 @@ class Journal extends ObjectModel
         return 'Winbooks.TORM.OM.Accounting.Journal, Winbooks.TORM.OM';
     }
 
+    /**
+     * Get the belongsTo Third relationship
+     *
+     * @return \Whitecube\Winbooks\Query\Relation
+     */
+    public function getBookYearRelation()
+    {
+        return $this->relatesTo(BookYear::class)->using('Id','BookYear_Id');
+    }
 }
