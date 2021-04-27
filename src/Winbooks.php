@@ -497,7 +497,7 @@ class Winbooks
     {
         $model = Query::model($objectModel);
 
-        $oms = $model->getOMS();
+        $oms = urlencode($model->getOMS());
         
         return $this->request(function($options = []) use ($oms, $maxLevel) {
             return $this->guzzle->get("app/$oms/Folder/$this->folder?maxLevel=$maxLevel", $options);
@@ -518,7 +518,7 @@ class Winbooks
     {
         $model = Query::model($objectModel);
 
-        $oms = $model->getOMS();
+        $oms = urlencode($model->getOMS());
 
         if(is_callable($query)) {
             $callback = $query;
@@ -589,7 +589,8 @@ class Winbooks
     {
         $model = Query::model($objectModel);
 
-        $om = $model->getOM();
+        $om = urlencode($model->getOM());
+        $code = urlencode($code);
 
         return $this->request(function($options = []) use ($om, $code, $maxLevel) {
             return $this->guzzle->get("app/$om/$code/Folder/$this->folder?maxLevel=$maxLevel", $options);
@@ -611,11 +612,12 @@ class Winbooks
     {
         $model = Query::model($objectModel);
 
-        $om = $model->getOM();
-
         if(!isset($data['Code'])) {
             $data['Code'] = $code;
         }
+
+        $om = urlencode($model->getOM());
+        $code = urlencode($code);
 
         $url = $model->hasCodeInCreateUrl()
             ? "app/$om/$code/Folder/$this->folder"
@@ -642,7 +644,7 @@ class Winbooks
     {
         $model = Query::model($objectModel);
 
-        $oms = $model->getOMS();
+        $oms = urlencode($model->getOMS());
 
         return $this->request(function($options = []) use ($oms, $objects) {
             return $this->guzzle->post("app/$oms/Folder/$this->folder", array_merge($options, [
@@ -666,7 +668,8 @@ class Winbooks
     {
         $model = Query::model($objectModel);
 
-        $om = $model->getOM();
+        $om = urlencode($model->getOM());
+        $code = urlencode($code);
 
         $url = $model->hasCodeInUpdateUrl()
             ? "app/$om/$code/Folder/$this->folder"
@@ -693,7 +696,7 @@ class Winbooks
     {
         $model = Query::model($objectModel);
 
-        $oms = $model->getOMS();
+        $oms = urlencode($model->getOMS());
 
         return $this->request(function($options = []) use ($oms, $objects) {
             return $this->guzzle->put("app/$oms/Folder/$this->folder", array_merge($options, [
@@ -716,7 +719,7 @@ class Winbooks
     {
         $model = Query::model($objectModel);
 
-        $om = $model->getOM();
+        $om = urlencode($model->getOM());
         
         return $this->request(function($options = []) use ($om, $code) {
             return $this->guzzle->delete("app/$om/$code/Folder/$this->folder", $options);
@@ -735,8 +738,8 @@ class Winbooks
     public function addModel(ObjectModel $model)
     {
         return $this->request(function($options = []) use ($model) {
-            $om = $model->getOM();
-            $code = $model->getCode();
+            $om = urlencode($model->getOM());
+            $code = urlencode($model->getCode());
 
             return $this->guzzle->post("app/$om/$code/Folder/$this->folder", array_merge($options, [
                 'json' => $model
@@ -756,7 +759,7 @@ class Winbooks
     public function addModels(array $models)
     {
         return $this->request(function($options = []) use ($models) {
-            $oms = $models[0]->getOMS();
+            $oms = urlencode($models[0]->getOMS());
 
             return $this->guzzle->post("app/$oms/Folder/$this->folder", array_merge($options, [
                 'json' => $models
